@@ -830,6 +830,30 @@
       .gtable th,.gtable td{padding:7px 8px}
     }
 
+    /* ===== 필터 줄 정렬 (2026-09-20) =====
+       「임차상태」 칸만 아래에 체크박스가 붙어 높이가 달라지는 바람에
+       그 칸 전체가 위로 밀려 라벨·셀렉트 줄이 어긋났습니다.
+       모든 칸을 위쪽 기준으로 정렬하고, 체크박스는 칸 높이를 늘리지 않게 띄웁니다. */
+    .controls{ align-items:start !important; }
+    .controls > div{
+      align-self:start;
+      position:relative;
+      display:flex;
+      flex-direction:column;
+    }
+    .controls > div > label:first-child{
+      margin-bottom:6px;
+      min-height:16px;
+      line-height:16px;
+    }
+    .controls .filter-sub{
+      position:absolute;
+      top:100%;
+      left:0;
+      margin-top:6px;
+      white-space:nowrap;
+    }
+
     /* Modal Screen */
     .modal-bg {
       position: fixed;
@@ -1011,7 +1035,7 @@
     <nav class="nav">
       <div class="brand">🏠 비거주지 근무직원 사택 임차현황</div>
       <div class="user">
-        <a class="btn ghost small" href="https://procurement-portal-two.vercel.app/" title="전략구매팀 업무포털로 이동">← 업무포털</a>
+        <a class="btn ghost small" href="https://fiti-procurement-portal.vercel.app/" title="전략구매팀 업무포털로 이동">← 업무포털</a>
         <span id="user-label"></span>
         <span id="role-label" class="pill"></span>
         <button id="open-guide" class="btn ghost small" type="button" title="비거주지 근무직원에 대한 지원금 운영요령 (2025.07.01.)">📋 사택 지원 지침</button>
@@ -1094,7 +1118,7 @@
           <div>
             <label>임차상태</label>
             <select id="filter-status"><option value="all">전체</option></select>
-            <label style="display:inline-flex;align-items:center;gap:4px;font-weight:normal;font-size:11px;margin-top:4px;cursor:pointer;color:var(--muted);">
+            <label class="filter-sub" style="display:inline-flex;align-items:center;gap:4px;font-weight:normal;font-size:11px;cursor:pointer;color:var(--muted);">
               <input id="exclude-terminated" type="checkbox" checked style="width:12px; height:12px; margin:0; cursor:pointer;"> 반납 완료 제외
             </label>
           </div>
@@ -1257,7 +1281,7 @@
   <!-- 공통 꼬리말 — 전 앱 동일 형식 (2026-09-19) -->
   <footer class="sitefoot" style="margin:26px auto 30px;padding:14px 16px 0;max-width:1400px;border-top:1px solid rgba(148,163,184,.28);display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:11px;color:#8a93a6;line-height:1.6">
     <span><b style="color:#6b7280">(재)FITI시험연구원</b> 사업지원본부 · 전략구매팀</span>
-    <span style="opacity:.5">·</span><span>비거주지 근무직원 사택 임차현황 v1.0</span>
+    <span style="opacity:.5">·</span><span>비거주지 근무직원 사택 임차현황 v1.1</span>
     <span style="opacity:.5">·</span><span>문의 : 전략구매팀 (내선 8124)</span>
   </footer>
     </main>
@@ -2298,12 +2322,12 @@
       
       $('#kpi-deposit').innerHTML = money(state.data.reduce((a, r) => a + num(r.deposit), 0)) + '원' + 
         (exceededDepositCount + exceededBothCount > 0 
-          ? `<br><span style="font-size:11px; color:var(--red); font-weight:800;">(초과 ${exceededDepositCount + exceededBothCount}건)</span>`
+          ? `<span style="font-size:11px; color:var(--red); font-weight:800; margin-left:6px; white-space:nowrap;">(초과 ${exceededDepositCount + exceededBothCount}건)</span>`
           : '');
       
       $('#kpi-rent').innerHTML = money(state.data.reduce((a, r) => a + num(r.rent), 0)) + '원' +
         (exceededRentCount + exceededBothCount > 0 
-          ? `<br><span style="font-size:11px; color:var(--red); font-weight:800;">(초과 ${exceededRentCount + exceededBothCount}건)</span>`
+          ? `<span style="font-size:11px; color:var(--red); font-weight:800; margin-left:6px; white-space:nowrap;">(초과 ${exceededRentCount + exceededBothCount}건)</span>`
           : '');
 
       $('#kpi-expiring').textContent = state.data.filter(r => r.status === 'expiring').length;
