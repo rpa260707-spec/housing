@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>비거주지 근무직원 사택 임차계약 관리 시스템</title>
+  <title>비거주지 근무직원 사택 임차현황 · FITI 전략구매팀</title>
   <!-- 로컬 파일이 없을 시 CDN fallback으로 동작하도록 스크립트 에러 처리를 지원합니다. -->
   <style>
     :root {
@@ -986,8 +986,9 @@
   <!-- Main App Screen -->
   <section id="app" class="app">
     <nav class="nav">
-      <div class="brand">🏠 비거주지 사택 임차현황</div>
+      <div class="brand">🏠 비거주지 근무직원 사택 임차현황</div>
       <div class="user">
+        <a class="btn ghost small" href="https://procurement-portal-two.vercel.app/" title="전략구매팀 업무포털로 이동">← 업무포털</a>
         <span id="user-label"></span>
         <span id="role-label" class="pill"></span>
         <button id="open-guide" class="btn ghost small" type="button" title="비거주지 근무직원에 대한 지원금 운영요령 (2025.07.01.)">📋 사택 지원 지침</button>
@@ -1000,7 +1001,7 @@
       <!-- Upper Toolbar -->
       <section class="hero-toolbar">
         <div>
-          <div class="hero-title">비거주지 사택 임차현황</div>
+          <div class="hero-title">비거주지 근무직원 사택 임차현황</div>
           <div class="hero-sub">엑셀 데이터를 업로드하여 임차 기간, 보증금/월세, 임대인 계좌 등을 관리하고 변경 이력을 추적합니다. 저장 시 반영된 신규 엑셀이 다운로드됩니다.</div>
           <p class="source-chip" id="source-info">현재 불러온 파일: 없음</p>
         </div>
@@ -1044,7 +1045,8 @@
         <div class="panel">
           <h2>사택 지원 기준 및 준수율</h2>
           <div id="compliance-chart"></div>
-          <p class="hint">지역별 지원 한도 대비 준수 현황을 확인합니다.</p>
+          <p class="hint">지역별 지원 한도 대비 준수 현황을 확인합니다.<br>
+            <b>2026년 예산집행지침 기준 · 보증금과 월세를 서로 조정할 수 없어 각각 한도를 지켜야 합니다.</b></p>
         </div>
       </section>
 
@@ -1588,27 +1590,22 @@
       
       const depositExceeded = depVal > limit.deposit;
       const rentExceeded = rentVal > limit.rent;
-      
-      // Formula: 기준보증금 + 기준월세 * 12 >= 실제보증금 * 1.05 + 실제월세 * 12
-      const limitTotal = limit.deposit + (limit.rent * 12);
-      const actualTotal = (depVal * 1.05) + (rentVal * 12);
-      const isFormulaCompliant = (limitTotal >= actualTotal);
-      
+
+      // 2026년 예산집행지침(p.22) 개정:
+      //   2025년 — 보증금/월세 간 조정 '가능'  → 총액 환산으로 상계 판정
+      //   2026년 — 보증금/월세 간 조정 '불가'  → 각 항목을 개별로 판정
+      // 따라서 총액 상계식(기준보증금 + 기준월세×12 대비)은 더 이상 쓰지 않습니다.
+      const isFormulaCompliant = !depositExceeded && !rentExceeded;
+
       let status = '한도 충족';
-      
-      if (depVal !== limit.deposit || rentVal !== limit.rent) {
-        if (isFormulaCompliant) {
-          status = '한도 충족';
-        } else {
-          if (depositExceeded && rentExceeded) status = '보증금/월세 초과';
-          else if (depositExceeded) status = '보증금 초과';
-          else if (rentExceeded) status = '월세 초과';
-        }
-      }
-      
+
+      if (depositExceeded && rentExceeded) status = '보증금/월세 초과';
+      else if (depositExceeded) status = '보증금 초과';
+      else if (rentExceeded) status = '월세 초과';
+
       return {
-        depositExceeded: depositExceeded && !isFormulaCompliant,
-        rentExceeded: rentExceeded && !isFormulaCompliant,
+        depositExceeded,
+        rentExceeded,
         limit,
         status,
         isFormulaCompliant
@@ -2435,7 +2432,24 @@
       renderSummary();
       renderTable();
       renderLogs();
-      $('#source-info').textContent = `현재 불러온 파일: ${state.sourceFile || '없음 (임시 세션)'}`;
+      renderSourceInfo();
+    }
+
+    // 불러온 파일 + 서버 최근 저장 일시를 한 줄로 표시합니다.
+    function renderSourceInfo() {
+      const el = $('#source-info');
+      if (!el) return;
+
+      let text = `현재 불러온 파일: ${state.sourceFile || '없음 (임시 세션)'}`;
+
+      if (state.serverSavedAt) {
+        const who = state.serverSavedBy
+          ? (state.serverSavedBy === state.user ? '내가 저장함' : state.serverSavedBy)
+          : '-';
+        text += ` · 최근 저장: ${who} / ${state.serverSavedAt}`;
+      }
+
+      el.textContent = text;
     }
 
     // ============================== 상세조회 및 사이드바 제어 ==============================
@@ -2920,15 +2934,17 @@
       const fileName = state.originalFileName || state.sourceFile || '사택임차계약현황.xlsx';
       
       const ok = confirm(
-        `${fileName} 파일을 저장 및 다운로드합니다.
-        
+        `✅ 서버 저장은 수정할 때마다 자동으로 됩니다. (화면 우측 아래 표시)
+
 ` +
-        `작성/편집된 사택 임차계약 데이터와 전체 변경 이력 및 통계 요약이 포함된 엑셀 파일이 생성됩니다.
+        `엑셀 파일(${fileName})도 내려받으시겠습니까?
 ` +
-        `이후 기존 원본 파일에 덮어쓰기 방식으로 저장해주시면 됩니다.
-        
+        `— 임차계약 데이터 + 변경 이력 + 통계 요약이 들어갑니다. 받은 뒤 기존 원본 파일에 덮어쓰면 됩니다.
+
 ` +
-        `계속 진행하시겠습니까?`
+        `[확인] 엑셀 다운로드
+` +
+        `[취소] 다운로드만 안 함 — 서버에 저장된 내용은 그대로 유지됩니다`
       );
 
       if (!ok) return;
@@ -3335,6 +3351,9 @@
           .then(function (j) {
             if (j && j.success) {
               lastSig = signature();
+              state.serverSavedAt = j.savedAt || '';
+              state.serverSavedBy = j.savedBy || state.user || '';
+              renderSourceInfo();
               badge('서버 저장됨 · ' + (j.savedAt || ''), 'ok');
             } else {
               badge('서버 저장 실패', 'warn');
@@ -3367,6 +3386,9 @@
               state.data = j.data;
               state.logs = Array.isArray(j.logs) ? j.logs : [];
               state.sourceFile = j.sourceFile || '';
+              state.serverSavedAt = j.savedAt || '';
+              state.serverSavedBy = j.savedBy || '';
+              renderSourceInfo();
               badge('서버 데이터 불러옴 · ' + (j.savedAt || ''), 'ok');
             } else {
               badge('서버 저장 사용 가능', 'ok');

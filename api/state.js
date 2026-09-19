@@ -1,6 +1,6 @@
 import { put, get } from '@vercel/blob';
 
-// 비거주지 사택 임차현황 서버 저장 API (Vercel Blob)
+// 비거주지 근무직원 사택 임차현황 서버 저장 API (Vercel Blob)
 // 사택 계약 목록(data)과 변경 이력(logs)을 한 파일로 보관합니다.
 
 const FILE_NAME = 'housing-state.json';
