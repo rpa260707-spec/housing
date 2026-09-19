@@ -993,7 +993,7 @@
         <span id="role-label" class="pill"></span>
         <button id="open-guide" class="btn ghost small" type="button" title="비거주지 근무직원에 대한 지원금 운영요령 (2025.07.01.)">📋 사택 지원 지침</button>
         <button id="toggle-mask" class="btn ghost small" type="button" title="담당자명 · 주소지 · 임대인 정보를 가리거나 표시합니다">🔒 개인정보 가림</button>
-        <button id="clear-session" class="btn ghost small">시스템 초기화</button>
+        <button id="clear-session" class="btn ghost small">전체 초기화</button>
       </div>
     </nav>
     <main>
@@ -2442,11 +2442,14 @@
 
       let text = `현재 불러온 파일: ${state.sourceFile || '없음 (임시 세션)'}`;
 
-      if (state.serverSavedAt) {
-        const who = state.serverSavedBy
-          ? (state.serverSavedBy === state.user ? '내가 저장함' : state.serverSavedBy)
-          : '-';
-        text += ` · 최근 저장: ${who} / ${state.serverSavedAt}`;
+      const at = String(state.serverSavedAt || '').trim();
+      const by = String(state.serverSavedBy || '').trim();
+
+      // 화환 시스템과 같은 형식 — 저장자 이름을 그대로 쓰고 본인이면 '(본인)' 만 덧붙입니다.
+      if (at || by) {
+        let who = by || '저장자 미확인';
+        if (by) who = (state.user && by === state.user) ? `${by} 님 (본인)` : `${by} 님`;
+        text += at ? ` · 최근 저장: ${who} / ${at}` : ` · 최근 저장: ${who}`;
       }
 
       el.textContent = text;
