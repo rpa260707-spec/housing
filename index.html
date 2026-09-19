@@ -1,0 +1,3398 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>비거주지 근무직원 사택 임차계약 관리 시스템</title>
+  <!-- 로컬 파일이 없을 시 CDN fallback으로 동작하도록 스크립트 에러 처리를 지원합니다. -->
+  <style>
+    :root {
+      --blue: #1e40af;
+      --blue-light: #eff6ff;
+      --blue-border: #bfdbfe;
+      --navy: #0f172a;
+      --bg: #f4f6fb;
+      --card: #fff;
+      --line: #cfd8e6;
+      --muted: #64748b;
+      --green: #10b981;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+      --purple: #8b5cf6;
+      --cyan: #06b6d4;
+      --orange: #f97316;
+      --slate: #475569;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Pretendard', 'Noto Sans KR', 'Malgun Gothic', system-ui, sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(180deg, #f8fbff 0%, #eef4ff 42%, #f7f9fc 100%);
+      color: #111827;
+      min-height: 100vh;
+    }
+    
+    button, input, select, textarea {
+      font: inherit;
+    }
+    
+    button {
+      cursor: pointer;
+    }
+    
+    .hidden {
+      display: none !important;
+    }
+    
+    /* Login Page CSS */
+    .login {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #0f172a, #1d4ed8 65%, #38bdf8);
+      padding: 24px;
+    }
+    
+    .login-card {
+      width: min(520px, 100%);
+      background: rgba(255, 255, 255, 0.96);
+      border-radius: 24px;
+      padding: 38px;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+      border: 1.2px solid var(--line);
+    }
+    
+    .badge-top {
+      display: inline-block;
+      background: #dbeafe;
+      color: #1d4ed8;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 900;
+      margin-bottom: 14px;
+    }
+    
+    .login h1 {
+      font-size: 28px;
+      line-height: 1.3;
+      margin-bottom: 12px;
+      color: var(--navy);
+    }
+    
+    .desc {
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+    
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 900;
+      color: #475569;
+      margin-bottom: 7px;
+    }
+    
+    input, select, textarea {
+      width: 100%;
+      border: 1.2px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: #fff;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+    
+    .form {
+      display: grid;
+      gap: 14px;
+    }
+    
+    .btn {
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 14px;
+      background: var(--blue);
+      color: #fff;
+      font-weight: 900;
+      transition: filter 0.15s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .btn:hover {
+      filter: brightness(0.95);
+    }
+    
+    .btn.ghost {
+      background: #fff;
+      color: #111827;
+      border: 1.2px solid var(--line);
+    }
+    
+    .btn.dark {
+      background: #111827;
+    }
+    
+    .btn.red {
+      background: var(--red) !important;
+      color: #fff !important;
+    }
+    
+    .btn.success {
+      background: var(--green) !important;
+      color: #fff !important;
+    }
+    
+    .btn.small {
+      padding: 7px 10px;
+      border-radius: 9px;
+      font-size: 13px;
+    }
+    
+    /* Main Dashboard Layout */
+    .app {
+      min-height: 100vh;
+    }
+    
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(8px);
+      border-bottom: 1.2px solid var(--line);
+      padding: 14px 28px;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+    }
+    
+    .brand {
+      font-weight: 950;
+      font-size: 20px;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .user {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    
+    .pill {
+      background: #f1f5f9;
+      color: #334155;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    
+    main {
+      max-width: 1760px;
+      margin: 0 auto;
+      padding: 22px 26px;
+    }
+    
+    .hero-toolbar {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+      border: 1.2px solid #d7e3f4;
+      border-radius: 20px;
+      padding: 16px 18px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: center;
+      box-shadow: 0 16px 38px rgba(15, 23, 42, 0.08);
+    }
+    
+    .hero-title {
+      font-size: 22px;
+      font-weight: 950;
+      color: #0f172a;
+      line-height: 1.35;
+    }
+    
+    .hero-sub {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+    
+    .source-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f1f5f9;
+      border: 1.2px solid #e2e8f0;
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      color: #334155;
+      font-weight: 800;
+      max-width: 420px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 8px;
+    }
+    
+    .hero-actions {
+      display: grid !important;
+      grid-template-columns: 520px 150px 150px 150px 150px !important;
+      gap: 12px !important;
+      align-items: center !important;
+      justify-content: end !important;
+    }
+    
+    .file-input-wrap {
+      height: 52px !important;
+      min-height: 52px !important;
+      padding: 6px 10px !important;
+      border: 1.2px solid #cbd5e1 !important;
+      border-radius: 16px !important;
+      background: #f8fafc !important;
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) 150px !important;
+      gap: 10px !important;
+      align-items: center !important;
+      overflow: hidden !important;
+    }
+    
+    .file-input-wrap input[type="file"] {
+      width: 100% !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
+      height: 38px !important;
+      line-height: 38px !important;
+      padding: 4px 6px !important;
+      border: 0;
+      background: transparent;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      white-space: nowrap !important;
+    }
+    
+    .file-input-wrap #load-file {
+      width: 150px !important;
+      min-width: 150px !important;
+      max-width: 150px !important;
+      height: 40px !important;
+      min-height: 40px !important;
+      border-radius: 13px !important;
+      margin: 0 !important;
+      border: 2px solid #2563eb !important;
+      background: #eff6ff !important;
+      color: #1d4ed8 !important;
+    }
+    
+    .hero-actions .btn {
+      width: 150px !important;
+      min-width: 150px !important;
+      max-width: 150px !important;
+      height: 50px !important;
+      min-height: 50px !important;
+      border-radius: 14px !important;
+      font-size: 14px !important;
+      font-weight: 950 !important;
+      box-sizing: border-box !important;
+    }
+    
+    #export-data {
+      border: 2px solid #2563eb !important;
+      background: #2563eb !important;
+      color: #fff !important;
+    }
+    
+    #add-housing {
+      border: 2px solid #10b981 !important;
+      background: #10b981 !important;
+      color: #fff !important;
+    }
+    
+    #export-log {
+      border: 2px solid #7c3aed !important;
+      background: #f5f3ff !important;
+      color: #6d28d9 !important;
+      font-size: 13px !important;
+      letter-spacing: -0.03em !important;
+    }
+    
+    #clear-data {
+      border: 2px solid #ef4444 !important;
+      background: #ef4444 !important;
+      color: #fff !important;
+    }
+    
+    /* KPI Cards CSS */
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .card {
+      background: var(--card);
+      border: 1.2px solid #dbe5f2;
+      border-radius: 18px;
+      padding: 18px 18px 18px 20px;
+      min-height: 108px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.07);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      border-left: 5px solid #cbd5e1;
+    }
+    
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 34px rgba(15, 23, 42, 0.10);
+    }
+    
+    .card:nth-child(1) { border-left-color: var(--blue); }
+    .card:nth-child(2) { border-left-color: var(--green); }
+    .card:nth-child(3) { border-left-color: var(--cyan); }
+    .card:nth-child(4) { border-left-color: var(--orange); }
+    .card:nth-child(5) { border-left-color: var(--yellow); }
+    .card:nth-child(6) { border-left-color: var(--purple); }
+    
+    .card::after {
+      content: '';
+      position: absolute;
+      right: 18px;
+      top: 30px;
+      width: 46px;
+      height: 46px;
+      border-radius: 16px;
+      background: #eef2ff;
+      opacity: 0.8;
+    }
+    
+    .card:nth-child(1)::after { background: #dbeafe; }
+    .card:nth-child(2)::after { background: #ecfdf5; }
+    .card:nth-child(3)::after { background: #e0f2fe; }
+    .card:nth-child(4)::after { background: #fff7ed; }
+    .card:nth-child(5)::after { background: #fffbeb; }
+    .card:nth-child(6)::after { background: #f3e8ff; }
+    
+    .card-title {
+      font-size: 13px;
+      color: #334155;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+    
+    .card-value {
+      font-size: 26px;
+      font-weight: 950;
+      letter-spacing: -0.04em;
+    }
+    
+    .blue { color: var(--blue); }
+    .green { color: var(--green); }
+    .red { color: var(--red); }
+    .yellow { color: var(--yellow); }
+    .purple { color: var(--purple); }
+    
+    .card:nth-child(1)::before { content: '전체 관리 사택'; position: absolute; left: 20px; bottom: 15px; font-size: 12px; color: #94a3b8; }
+    .card:nth-child(2)::before { content: '현황 보증금 합계'; position: absolute; left: 20px; bottom: 15px; font-size: 12px; color: #94a3b8; }
+    .card:nth-child(3)::before { content: '현황 월세 합계'; position: absolute; left: 20px; bottom: 15px; font-size: 12px; color: #94a3b8; }
+    .card:nth-child(4)::before { content: '3개월 내 만료 건수'; position: absolute; left: 20px; bottom: 15px; font-size: 12px; color: #94a3b8; }
+    .card:nth-child(5)::before { content: '계약 만료 처리 건수'; position: absolute; left: 20px; bottom: 15px; font-size: 12px; color: #94a3b8; }
+    .card:nth-child(6)::before { content: '유효 임차 계약 건수'; position: absolute; left: 20px; bottom: 15px; font-size: 12px; color: #94a3b8; }
+    
+    /* Charts Container */
+    .charts {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1.25fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .panel {
+      background: var(--card);
+      border: 1.2px solid #d7e3f4;
+      border-radius: 22px;
+      padding: 18px 18px 16px;
+      box-shadow: 0 14px 34px rgba(15, 23, 42, 0.07);
+      min-height: 230px;
+    }
+    
+    .panel h2 {
+      font-size: 17px;
+      font-weight: 950;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1.2px solid #eef2f7;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .charts .panel:nth-child(1) h2::before { content: '●'; color: var(--blue); }
+    .charts .panel:nth-child(2) h2::before { content: '●'; color: var(--orange); }
+    .charts .panel:nth-child(3) h2::before { content: '●'; color: var(--green); }
+    
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-top: 8px;
+    }
+    
+    /* Bar Chart Styling */
+    .barline {
+      display: grid;
+      grid-template-columns: 140px 1fr 94px;
+      gap: 10px;
+      align-items: center;
+      margin: 12px 0;
+      font-size: 12px;
+    }
+    
+    .barline > div:first-child {
+      font-weight: 850;
+      color: #334155;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .barbg {
+      height: 15px;
+      background: #e8eef7;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    
+    .bar {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.2s ease;
+      box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+    }
+    
+    /* Controls / Filters Row */
+    .controls {
+      display: grid;
+      grid-template-columns: minmax(240px, 1.5fr) repeat(8, minmax(120px, 1fr)) auto !important;
+      gap: 10px !important;
+      align-items: end !important;
+      background: #fff;
+      border: 1.2px solid #dbe5f2;
+      border-radius: 20px;
+      padding: 16px;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+      margin-bottom: 16px;
+    }
+    
+    .controls label {
+      font-size: 12px;
+      color: #475569;
+    }
+    
+    .controls input, .controls select {
+      border-color: #dbe5f2;
+      border-radius: 13px;
+      min-height: 45px;
+    }
+    
+    .controls .btn {
+      min-height: 45px;
+      border-radius: 13px;
+    }
+    
+    /* Workspace (Table + Sidebar) */
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 430px;
+      gap: 18px;
+      align-items: start;
+    }
+    
+    .table-area {
+      min-width: 0;
+      min-height: 0 !important;
+    }
+    
+    .table-area::before {
+      content: '사택 계약 관리 목록';
+      display: block;
+      margin: 0 0 10px 4px;
+      font-size: 17px;
+      font-weight: 950;
+      color: #0f172a;
+    }
+    
+    .table-wrap {
+      background: #fff;
+      border: 1.2px solid #d4deec;
+      border-radius: 20px;
+      overflow-y: auto !important;
+      overflow-x: auto !important;
+      max-height: 620px !important;
+      box-shadow: 0 16px 36px rgba(15, 23, 42, 0.075);
+      scrollbar-gutter: stable !important;
+    }
+    
+    .table-wrap::-webkit-scrollbar {
+      width: 20px;
+      height: 20px;
+    }
+    
+    .table-wrap::-webkit-scrollbar-track {
+      background: #dbe4f0;
+      border-radius: 999px;
+    }
+    
+    .table-wrap::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 999px;
+      border: 4px solid #dbe4f0;
+    }
+    
+    .table-wrap::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      text-align: left;
+    }
+    
+    th, td {
+      border-bottom: 1.2px solid #e2e8f0;
+      border-right: 1.2px solid #edf2f7;
+      padding: 12px 13px;
+      vertical-align: top;
+      font-size: 13px;
+    }
+    
+    th:last-child, td:last-child {
+      border-right: 0;
+    }
+    
+    th {
+      position: sticky !important;
+      top: 0 !important;
+      background: #eef4ff;
+      color: #0f172a;
+      font-weight: 950;
+      white-space: nowrap;
+      z-index: 10 !important;
+      border-bottom: 2.4px solid #bfdbfe;
+      height: 46px;
+    }
+    
+    tbody tr:nth-child(even) td {
+      background: #fbfdff;
+    }
+    
+    tr:hover td {
+      background: #f0f7ff !important;
+    }
+    
+    .data-row {
+      cursor: pointer;
+    }
+    
+    .data-row.selected td {
+      background: #dbeafe !important;
+      box-shadow: none !important;
+    }
+    
+    .clip {
+      max-width: 320px;
+      white-space: pre-line;
+      line-height: 1.45;
+    }
+    
+    .muted {
+      color: var(--muted);
+      font-size: 12px;
+    }
+    
+    .price {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    
+    .status {
+      display: inline-flex;
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 11px;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+    
+    .s-active { background: #d1fae5; color: #047857; }
+    .s-renew { background: #e0f2fe; color: #0369a1; }
+    .s-implicit { background: #fae8ff; color: #86198f; }
+    .s-expiring { background: #fef3c7; color: #b45309; }
+    .s-expired { background: #fee2e2; color: #b91c1c; }
+    .s-terminating { background: #f5f3ff; color: #5b21b6; }
+    .s-terminated { background: #e5e7eb; color: #374151; }
+    
+    .row-status {
+      min-width: 102px;
+      border-radius: 10px;
+      padding: 4px 6px;
+      background: #fff;
+      font-size: 12px;
+    }
+    
+    .empty {
+      padding: 44px;
+      text-align: center;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    
+    /* Sidebar CSS */
+    .detail-sidebar {
+      position: sticky;
+      top: 86px;
+      max-height: calc(100vh - 108px);
+      overflow-y: auto;
+      background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+      border: 1.2px solid #dbe5f2;
+      border-radius: 22px;
+      padding: 20px;
+      box-shadow: 0 18px 46px rgba(15, 23, 42, 0.11);
+    }
+    
+    .sidebar-head {
+      background: #f8fbff;
+      border: 1.2px solid #e2e8f0 !important;
+      border-radius: 16px;
+      padding: 14px;
+      margin: -2px 0 14px 0;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    
+    .sidebar-title {
+      font-size: 18px;
+      font-weight: 950;
+      color: #0f172a;
+    }
+    
+    .sidebar-section {
+      padding: 12px 0;
+      border-bottom: 1.2px solid #eef2f7;
+    }
+    
+    .sidebar-section:last-child {
+      border-bottom: 0;
+    }
+    
+    .sidebar-section h3 {
+      font-size: 14px;
+      color: #1d4ed8;
+      margin-bottom: 10px;
+      font-weight: 900;
+    }
+    
+    .info-grid {
+      display: grid;
+      grid-template-columns: 92px 1fr;
+      gap: 8px 12px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    
+    .info-key {
+      color: #64748b;
+      font-weight: 900;
+    }
+    
+    .info-val {
+      white-space: pre-line;
+    }
+    
+    .sidebar-empty {
+      background: #f8fafc;
+      border: 1.2px dashed #cbd5e1 !important;
+      border-radius: 16px;
+      text-align: center;
+      color: #64748b;
+      line-height: 1.7;
+      padding: 28px 6px;
+    }
+    
+    .readonly {
+      background: #f8fafc;
+      border-color: #e2e8f0;
+      border-radius: 14px;
+      border-width: 1.2px !important;
+      padding: 10px 12px;
+      min-height: 42px;
+      line-height: 1.55;
+    }
+    
+    .sidebar-actions {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    
+    /* Log Tables */
+    .log-deleted td {
+      background: #fff1f2 !important;
+    }
+    
+    .log-badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+    
+    .log-badge.deleted {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    
+    .log-badge.normal {
+      background: #eef2ff;
+      color: #3730a3;
+    }
+    
+    /* ===== 사택 지원 지침 팝업 ===== */
+    .guide-tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:2px solid #e2e8f0;margin-bottom:16px}
+    .guide-tab{border:0;background:transparent;color:#94a3b8;font-size:13.5px;font-weight:900;
+      padding:10px 14px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;
+      border-radius:10px 10px 0 0;font-family:inherit;transition:color .15s,border-color .15s,background .15s}
+    .guide-tab:hover{background:#f1f5f9;color:#475569}
+    .guide-tab.active{color:#0f172a;border-bottom-color:#2563eb}
+    .guide-view{display:none}
+    .guide-view.active{display:block}
+    .gscroll{max-height:min(52vh,460px);overflow:auto;border:1px solid #e2e8f0;border-radius:14px}
+    .gtable{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+    .gtable th,.gtable td{border-bottom:1px solid #e9eef5;border-right:1px solid #e9eef5;
+      padding:9px 11px;text-align:center;vertical-align:middle}
+    .gtable thead th{position:sticky;top:0;z-index:3;background:#f1f5f9;color:#0f172a;font-weight:900;font-size:12.5px}
+    .gtable thead th.hl{background:#e0f2fe;color:#0369a1}
+    .gtable td.k{background:#f8fafc;font-weight:900;color:#0f172a;text-align:left;white-space:nowrap}
+    .gtable td.hl{background:#f0f9ff}
+    .gtable td.no{color:#cbd5e1}
+    .gtable.num td{font-variant-numeric:tabular-nums}
+    .gtable .sub{display:block;font-size:11.5px;color:#64748b;font-weight:600;line-height:1.5;margin-top:2px}
+    .gnote{background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:14px 16px;
+      margin-bottom:12px;font-size:13px;line-height:1.75;color:#334155}
+    .gnote h4{font-size:13.5px;font-weight:900;color:#0f172a;margin:0 0 8px}
+    .gnote ul,.gnote ol{margin:0;padding-left:19px}
+    .gnote li{margin:3px 0}
+    .gnote .sub{color:#64748b;font-size:12.5px;line-height:1.6;margin-top:3px}
+    .gnote.accent{background:#f0f9ff;border-color:#bae6fd}
+    .gnote.accent h4{color:#0369a1}
+    .gnote.warn{background:#fffbeb;border-color:#fde68a}
+    .gnote.warn h4{color:#92400e}
+    #open-guide{background:#eef2ff!important;border:1px solid #c7d2fe!important;color:#4338ca!important}
+    @media(max-width:700px){
+      .guide-tab{font-size:12px;padding:9px 10px}
+      .gtable{font-size:12px}
+      .gtable th,.gtable td{padding:7px 8px}
+    }
+
+    /* Modal Screen */
+    .modal-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      z-index: 50;
+    }
+    
+    .modal {
+      width: min(980px, 96vw);
+      max-height: 90vh;
+      overflow-y: auto;
+      background: #fff;
+      border-radius: 22px;
+      padding: 22px;
+      border: 1.2px solid var(--line) !important;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.3);
+    }
+    
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    
+    .modal-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    
+    .full {
+      grid-column: 1 / -1;
+    }
+    
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    
+    /* Copy Modal Specific styles */
+    .share-modal .modal {
+      width: min(760px, 94vw);
+    }
+    
+    .share-message-box {
+      width: 100%;
+      min-height: 220px;
+      line-height: 1.6;
+      resize: vertical;
+      border-radius: 12px;
+      padding: 10px;
+    }
+    
+    .share-preview-info {
+      background: #f8fafc;
+      border: 1.2px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 12px;
+      color: #334155;
+      font-size: 13px;
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+    
+    .share-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+    
+    /* Responsive styling */
+    @media (max-width: 1300px) {
+      .hero-toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      
+      .hero-actions {
+        grid-template-columns: 1fr 1fr !important;
+        width: 100% !important;
+        justify-content: stretch !important;
+      }
+      
+      .file-input-wrap {
+        grid-column: 1 / -1 !important;
+        width: 100% !important;
+      }
+      
+      .hero-actions .btn, #load-file, #add-housing, #export-data, #export-log, #clear-data {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+      }
+      
+      .kpis {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .charts {
+        grid-template-columns: 1fr;
+      }
+      
+      .controls {
+        grid-template-columns: 1fr 1fr !important;
+      }
+      
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+      
+      .detail-sidebar {
+        position: relative;
+        top: auto;
+        max-height: none;
+      }
+    }
+    
+    @media (max-width: 700px) {
+      main {
+        padding: 14px;
+      }
+      
+      .kpis {
+        grid-template-columns: 1fr;
+      }
+      
+      .modal-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .nav {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      
+      .sidebar-actions {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  
+  <!-- Main App Screen -->
+  <section id="app" class="app">
+    <nav class="nav">
+      <div class="brand">🏠 비거주지 사택 임차현황</div>
+      <div class="user">
+        <span id="user-label"></span>
+        <span id="role-label" class="pill"></span>
+        <button id="open-guide" class="btn ghost small" type="button" title="비거주지 근무직원에 대한 지원금 운영요령 (2025.07.01.)">📋 사택 지원 지침</button>
+        <button id="toggle-mask" class="btn ghost small" type="button" title="담당자명 · 주소지 · 임대인 정보를 가리거나 표시합니다">🔒 개인정보 가림</button>
+        <button id="clear-session" class="btn ghost small">시스템 초기화</button>
+      </div>
+    </nav>
+    <main>
+      
+      <!-- Upper Toolbar -->
+      <section class="hero-toolbar">
+        <div>
+          <div class="hero-title">비거주지 사택 임차현황</div>
+          <div class="hero-sub">엑셀 데이터를 업로드하여 임차 기간, 보증금/월세, 임대인 계좌 등을 관리하고 변경 이력을 추적합니다. 저장 시 반영된 신규 엑셀이 다운로드됩니다.</div>
+          <p class="source-chip" id="source-info">현재 불러온 파일: 없음</p>
+        </div>
+        <div class="hero-actions">
+          <div class="file-input-wrap">
+            <input id="data-file" type="file" accept=".xlsx,.xls,.csv">
+            <button id="load-file" class="btn ghost">엑셀 불러오기</button>
+          </div>
+          <button id="add-housing" class="btn success">신규 등록</button>
+          <button id="export-data" class="btn">현황 저장</button>
+          <button id="export-log" class="btn ghost">변경이력 다운로드</button>
+          <button id="clear-data" class="btn red small">화면 비우기</button>
+        </div>
+      </section>
+
+      <!-- KPI Summary Area -->
+      <section class="kpis">
+        <div class="card"><div class="card-title">전체 관리 사택</div><div id="kpi-total" class="card-value blue">0</div></div>
+        <div class="card"><div class="card-title">총 보증금액</div><div id="kpi-deposit" class="card-value green">0</div></div>
+        <div class="card"><div class="card-title">총 월세금액</div><div id="kpi-rent" class="card-value blue">0</div></div>
+        <div class="card"><div class="card-title">만료 예정 (3개월)</div><div id="kpi-expiring" class="card-value yellow">0</div></div>
+        <div class="card"><div class="card-title">계약 만료</div><div id="kpi-expired" class="card-value red">0</div></div>
+        <div class="card"><div class="card-title">평균 월세액</div><div id="kpi-avg-rent" class="card-value purple">0</div></div>
+      </section>
+
+      <!-- Charts Row -->
+      <section class="charts">
+        <div class="panel">
+          <h2>사택 형태별 현황</h2>
+          <div id="type-chart"></div>
+        </div>
+        <div class="panel">
+          <h2>부서별 임차 Top 5</h2>
+          <div id="dept-chart"></div>
+        </div>
+        <div class="panel">
+          <h2>월별 계약 만료 예정 건수</h2>
+          <div id="expiry-chart"></div>
+          <p class="hint">계약종료일이 도래하는 월 기준 임차 만료 분포입니다.</p>
+        </div>
+        <div class="panel">
+          <h2>사택 지원 기준 및 준수율</h2>
+          <div id="compliance-chart"></div>
+          <p class="hint">지역별 지원 한도 대비 준수 현황을 확인합니다.</p>
+        </div>
+      </section>
+
+      <!-- Filter Row -->
+      <section class="panel" style="margin-bottom:16px">
+        <div class="controls">
+          <div><label>통합 검색</label><input id="q" type="search" placeholder="담당자, 부서, 주소, 비고, 계좌번호 검색"></div>
+          <div><label>부서</label><select id="filter-dept"><option value="all">전체</option></select></div>
+          <div><label>지역</label><select id="filter-region">
+            <option value="all">전체</option>
+            <option value="서울">서울</option>
+            <option value="안산">안산</option>
+            <option value="대전">대전</option>
+            <option value="청주">청주</option>
+            <option value="대구">대구</option>
+            <option value="전주">전주</option>
+            <option value="광주">광주</option>
+            <option value="부산">부산</option>
+            <option value="울산">울산</option>
+          </select></div>
+          <div><label>사택형태</label><select id="filter-type"><option value="all">전체</option></select></div>
+          <div>
+            <label>임차상태</label>
+            <select id="filter-status"><option value="all">전체</option></select>
+            <label style="display:inline-flex;align-items:center;gap:4px;font-weight:normal;font-size:11px;margin-top:4px;cursor:pointer;color:var(--muted);">
+              <input id="exclude-terminated" type="checkbox" checked style="width:12px; height:12px; margin:0; cursor:pointer;"> 반납 완료 제외
+            </label>
+          </div>
+          <div><label>만료 예정일</label><select id="filter-expiry"><option value="all">전체</option><option value="soon">3개월 이내 만료</option><option value="expired">이미 만료</option></select></div>
+          <div><label>월세+관리비</label><select id="filter-rentfee"><option value="all">전체</option></select></div>
+          <div><label>정렬 기준</label><select id="sort-key"><option value="id">No</option><option value="manager">담당자</option><option value="startDate">최초계약일</option><option value="endDate">계약만료일</option><option value="rent">월세</option><option value="deposit">보증금</option></select></div>
+          <div><label>정렬 방향</label><select id="sort-order"><option value="asc">오름차순</option><option value="desc">내림차순</option></select></div>
+          <button id="clear-filter" class="btn ghost">필터 초기화</button>
+        </div>
+      </section>
+
+      <!-- Workspace Area -->
+      <section class="workspace">
+        <!-- Table Area -->
+        <div class="table-area">
+          <section class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>지역</th>
+                  <th>담당자</th>
+                  <th>담당부서</th>
+                  <th>계약일</th>
+                  <th>계약만료일</th>
+                  <th>예상종료일</th>
+                  <th>월세/보증금</th>
+                  <th>주소지</th>
+                  <th>임차상태</th>
+                  <th>월세+관리비</th>
+                </tr>
+              </thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </section>
+        </div>
+
+        <!-- Sidebar Detail View -->
+        <aside id="detail-sidebar" class="detail-sidebar">
+          <div class="sidebar-head">
+            <div>
+              <div class="sidebar-title">상세 계약 정보</div>
+              <p id="detail-sub" class="hint">목록에서 행을 클릭하면 이곳에 계약의 세부 내역이 나타납니다.</p>
+            </div>
+            <button id="close-detail-sidebar" class="btn ghost small" type="button">닫기</button>
+          </div>
+          <div id="sidebar-empty" class="sidebar-empty">선택된 사택 계약이 없습니다.<br>왼쪽 목록의 행을 선택해 주세요.</div>
+          
+          <div id="sidebar-content" class="hidden">
+            <!-- Basic Lease Info -->
+            <div class="sidebar-section">
+              <h3>기본 계약 정보</h3>
+              <div class="form">
+                <div><label>담당자</label><input id="d-manager"></div>
+                <div><label>담당부서</label><input id="d-dept"></div>
+                <div><label>계약시작일자</label><input id="d-start-date" type="date"></div>
+                <div><label>계약종료일자</label><input id="d-end-date" type="date"></div>
+                <div><label>예상종료일자</label><input id="d-expected-end-date" type="date"></div>
+                <div><label>보증금 (원)</label><input id="d-deposit" type="number" placeholder="예: 5000000"></div>
+                <div><label>월세 (원)</label><input id="d-rent" type="number" placeholder="예: 500000"></div>
+                <div><label>월세+관리비구분</label><input id="d-rentfee" placeholder="예: 관리비별도, 관리비포함 등"></div>
+              </div>
+            </div>
+
+            <!-- Property Info -->
+            <div class="sidebar-section">
+              <h3>사택 물건 정보</h3>
+              <div class="form">
+                <div><label>주소지</label><textarea id="d-address" rows="3" placeholder="상세 주소 입력"></textarea></div>
+                <div><label>자동 판별 지역</label><input id="d-region" class="readonly" readonly></div>
+                <div><label>사택 지원 한도 검토 결과</label><div id="d-compliance-box" style="padding: 10px; border-radius: 12px; font-weight: 800; font-size: 13px; background:#f8fafc; border:1.2px solid #e2e8f0; min-height:42px;"></div></div>
+                <div><label>사택 형태</label><input id="d-area-type" placeholder="예: 오피스텔, 원룸 등"></div>
+                <div><label>면적 (평/㎡)</label><input id="d-area-size" placeholder="예: 22㎡ 또는 7평"></div>
+              </div>
+            </div>
+
+            <!-- Lessor & Bank Details -->
+            <div class="sidebar-section">
+              <h3>임대인 및 계좌 정보</h3>
+              <div class="form">
+                <div><label>임대인 성명</label><input id="d-lessor-name"></div>
+                <div><label>임대인 연락처</label><input id="d-lessor-phone" placeholder="예: 010-0000-0000"></div>
+                <div><label>송금 은행</label><input id="d-bank" placeholder="예: 신한은행"></div>
+                <div><label>계좌번호</label><input id="d-account-no" placeholder="예: 110-000-000000"></div>
+              </div>
+            </div>
+
+            <!-- Audit / Remarks -->
+            <div class="sidebar-section">
+              <h3>기타 이력 및 특이사항</h3>
+              <div class="form">
+                <div><label>임차인 변경이력</label><textarea id="d-lessee-change" rows="3" placeholder="임차인 인수인계 이력 입력"></textarea></div>
+                <div><label>비고</label><textarea id="d-remarks" rows="3"></textarea></div>
+              </div>
+            </div>
+
+            <!-- Operation Section -->
+            <div class="sidebar-section">
+              <h3>현황 상태 변경</h3>
+              <div class="form">
+                <div><label>임차상태</label><select id="d-status"></select></div>
+                <div><label>변경 사유 (기록용)</label><input id="d-reason-change" placeholder="예: 계약 연장, 퇴사로 인한 반납 등"></div>
+              </div>
+              <div class="sidebar-actions">
+                <button id="delete-detail" class="btn red" type="button">삭제</button>
+                <button id="save-detail" class="btn" type="button">저장</button>
+              </div>
+              <div style="margin-top:10px">
+                <button id="copy-summary" class="btn ghost" style="width:100% !important; max-width:none !important;" type="button">📋 계약정보 요약 복사</button>
+              </div>
+            </div>
+
+            <!-- Selected Row Change Log -->
+            <div class="sidebar-section">
+              <h3>해당 건 변경 이력</h3>
+              <div class="table-wrap" style="box-shadow:none; max-height:220px !important;">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>시간</th>
+                      <th>작업</th>
+                      <th>변경 전</th>
+                      <th>변경 후</th>
+                    </tr>
+                  </thead>
+                  <tbody id="detail-log-body"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <!-- Overall Audit Trail -->
+      <section class="panel" style="margin-top:16px">
+        <h2 style="display:flex; justify-content:space-between; align-items:center;">
+          <span>전체 데이터 변경 이력</span>
+          <label style="font-size:12px; font-weight:normal; color:var(--muted); cursor:pointer; display:inline-flex; align-items:center; gap:4px; margin-bottom:0;">
+            <input id="hide-delete-logs" type="checkbox" style="width:14px; height:14px; margin:0; cursor:pointer;"> 삭제 이력 숨기기
+          </label>
+        </h2>
+        <p class="hint" style="margin-bottom:10px">사택 내역의 신규 추가, 상세 수정, 삭제 및 업로드 과정에서의 삭제 감지 내역이 시간 순으로 기록됩니다.</p>
+        <div class="table-wrap" style="box-shadow:none; max-height: 250px !important;">
+          <table>
+            <thead>
+              <tr>
+                <th>시간</th>
+                <th>사용자</th>
+                <th>작업</th>
+                <th>대상 사택</th>
+                <th>변경 전</th>
+                <th>변경 후</th>
+                <th>사유</th>
+              </tr>
+            </thead>
+            <tbody id="log-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </section>
+
+  <!-- Add New Entry Modal -->
+  <div id="add-modal" class="modal-bg hidden">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <h2>신규 사택 임차계약 추가</h2>
+          <p class="hint">새로 배정되었거나 계약된 사택 임차 내역을 등록합니다. [현황 저장]을 통해 최종 저장해야 엑셀 파일에 쓰기됩니다.</p>
+        </div>
+        <button class="btn ghost small close-modal">닫기</button>
+      </div>
+      <div class="modal-grid">
+        <div><label>담당자(직원명)</label><input id="a-manager" placeholder="예: 홍길동"></div>
+        <div><label>담당부서</label><input id="a-dept" placeholder="예: 대기측정센터"></div>
+        <div><label>계약시작일자</label><input id="a-start-date" type="date"></div>
+        <div><label>계약종료일자</label><input id="a-end-date" type="date"></div>
+        <div><label>예상종료일자</label><input id="a-expected-end-date" type="date"></div>
+        <div><label>보증금 (원)</label><input id="a-deposit" type="number" placeholder="예: 5000000"></div>
+        <div><label>월세 (원)</label><input id="a-rent" type="number" placeholder="예: 500000"></div>
+        <div><label>월세+관리비구분</label><input id="a-rentfee" placeholder="예: 관리비별도 또는 월세에 포함"></div>
+        <div><label>사택 형태</label><input id="a-area-type" placeholder="예: 원룸, 오피스텔, 아파트 등"></div>
+        <div><label>면적 (평/㎡)</label><input id="a-area-size" placeholder="예: 22㎡"></div>
+        <div><label>임대인 성명</label><input id="a-lessor-name" placeholder="예: 김임대"></div>
+        <div><label>임대인 연락처</label><input id="a-lessor-phone" placeholder="예: 010-1234-5678"></div>
+        <div><label>은행</label><input id="a-bank" placeholder="예: 국민은행"></div>
+        <div class="full"><label>계좌번호</label><input id="a-account-no" placeholder="예: 110-123-456789"></div>
+        <div class="full"><label>주소지</label><textarea id="a-address" rows="2" placeholder="정확한 주소 입력"></textarea></div>
+        <div><label>자동 판별 지역</label><input id="a-region" class="readonly" readonly></div>
+        <div><label>지원 한도 검토 결과</label><div id="a-compliance-box" style="padding: 10px; border-radius: 12px; font-weight: 800; font-size: 13px; background: #f8fafc; border: 1.2px solid #e2e8f0; min-height: 42px;">주소를 입력하면 한도가 표시됩니다.</div></div>
+        <div class="full"><label>임차인 변경이력</label><textarea id="a-lessee-change" rows="2" placeholder="이전 입주자 정보 등 이력 기술"></textarea></div>
+        <div class="full"><label>비고</label><textarea id="a-remarks" rows="2" placeholder="기타 특이사항"></textarea></div>
+        <div><label>임차상태</label><select id="a-status"></select></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn ghost close-modal">취소</button>
+        <button id="save-new-housing" class="btn success">신규 건 추가</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 사택 지원 지침 팝업 : 비거주지 근무직원에 대한 지원금 운영요령 (2025.07.01.) -->
+  <div id="guide-modal" class="modal-bg hidden">
+    <div class="modal" style="width:min(1100px,96vw)">
+      <div class="modal-head">
+        <div>
+          <h2>비거주지 근무직원 지원금 운영요령</h2>
+          <p class="hint">인사관리 3-2-2 · 2025.07.01. 개정 &nbsp;|&nbsp; 사택 계약은 <b>전략구매팀 소관</b>(제5조의2)</p>
+        </div>
+        <button class="btn ghost small close-modal" type="button">닫기</button>
+      </div>
+
+      <div class="guide-tabs">
+        <button type="button" class="guide-tab active" data-guide-view="target">지원 대상</button>
+        <button type="button" class="guide-tab" data-guide-view="support">지원 내역 · 한도</button>
+        <button type="button" class="guide-tab" data-guide-view="transport">권역 · 교통비</button>
+        <button type="button" class="guide-tab" data-guide-view="process">절차 · 보증 · 환수</button>
+      </div>
+
+      <!-- 1. 지원 대상 -->
+      <div class="guide-view active" data-guide-panel="target">
+        <div class="gnote accent">
+          <h4>✅ 지원 대상 — 아래 <u>둘 다</u> 충족 (제4조 제1항)</h4>
+          <ol>
+            <li><b>발령</b>에 따라 주거주지가 속한 <b>권역 외</b>로 발령받은 경우</li>
+            <li>현 근무지에서 신임근무지까지 <b>편도거리 50km 이상</b>
+              <div class="sub">편도거리는 웹사이트 지도상 자동차 이동 최단거리 기준</div>
+            </li>
+          </ol>
+        </div>
+
+        <div class="gnote warn">
+          <h4>🚫 제외 대상 (제4조 제3항)</h4>
+          <ol>
+            <li>최초 입사 시 <b>공고하여 채용된 지역</b>에 근무하는 경우
+              <div class="sub">단, 주거주지 이전을 한 직원이 최초 근무지로 발령받은 경우는 <b>지원 대상</b></div>
+            </li>
+            <li>발령이 아닌 <b>본인의 필요</b>로 주거주지를 변경하여 비거주자가 된 경우</li>
+          </ol>
+        </div>
+
+        <div class="gnote">
+          <h4>⚠️ 예외 — 동일 권역 내 50km 이상 (제4조 제4항)</h4>
+          기본 교통비 <b>월 15만원</b>만 지원하며, <b>그 외 지원금은 지급하지 않습니다.</b>
+        </div>
+
+        <div class="gnote">
+          <h4>📅 지원 기간 (제5조 제4항)</h4>
+          발령일로부터 <b>3년</b>. 연구원 필요에 의해 <b>2년 추가 연장</b> 가능 (최대 5년)
+          <div class="sub">거주지원금은 임대차계약에 한해 2년 단위 지원, 사유가 유효하면 자동 연장 (제5조 제2항)</div>
+        </div>
+
+        <div class="gnote accent">
+          <h4>🏠 사택 (제5조의2) — 전략구매팀 업무</h4>
+          <ul>
+            <li><b>원룸 형태</b>를 원칙으로 함</li>
+            <li>임차기간 · 규모 · 임차료는 <b>현지 물가수준</b> 등을 고려</li>
+            <li><b>전략구매팀</b>이 대상자와 협의 후 <b>연구원 명의</b>로 계약</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 2. 지원 내역 -->
+      <div class="guide-view" data-guide-panel="support">
+        <div class="gnote">
+          <h4>💰 지원내역 &lt;별표 2&gt; — 셋 중 <u>택일</u></h4>
+          비거주자가 선택하여 별지 제2호 신청서로 제출합니다.
+        </div>
+        <div class="gscroll">
+          <table class="gtable">
+            <thead>
+              <tr><th>구분</th><th>선택 ①</th><th>선택 ②</th><th class="hl">선택 ③ (사택)</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="k">거주 지원</td>
+                <td>거주지원금1<br><span class="sub">전세보증금<br>서울 4,000만원<br>그 외 3,000만원</span></td>
+                <td>거주지원금2<br><span class="sub">월세보증금<br>500만원 한도 내 실비</span></td>
+                <td class="hl"><b>사택 지원</b><br><span class="sub">연구원 명의 임차</span></td>
+              </tr>
+              <tr>
+                <td class="k">주재수당</td>
+                <td><b>월 30만원</b></td>
+                <td><b>월 50만원</b></td>
+                <td class="hl"><b>월 20만원</b></td>
+              </tr>
+              <tr>
+                <td class="k">교통비</td>
+                <td>정액 또는 실비</td>
+                <td>정액 또는 실비</td>
+                <td class="hl">정액 또는 실비</td>
+              </tr>
+              <tr>
+                <td class="k">준비금</td>
+                <td><b>20만원</b> <span class="sub">(최초 1회)</span></td>
+                <td><b>20만원</b> <span class="sub">(최초 1회)</span></td>
+                <td class="hl no">–</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="gnote">
+          <h4>📌 참고</h4>
+          <ul>
+            <li>발령일이 속하는 달의 <b>주재수당 · 교통비는 일할 계산</b> (제5조 제3항)</li>
+            <li>준비금은 발령월 또는 다음 월 급여에 합산, <b>1회 한정</b> (제5조 제7항)</li>
+            <li>지원내역 · 교통비 지급방법은 지원기간 중 <b>1회에 한해 변경</b> 가능 (제5조 제8항)</li>
+            <li>주재수당에는 거주지원금 <b>인정이자의 소득세 보전분</b> 포함 (제9조 제1항)</li>
+            <li>발령으로 인한 잔여기간 <b>임차료 · 관리비 · 중개수수료는 연구원 부담</b> (제9조 제2항)</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 3. 권역 · 교통비 -->
+      <div class="guide-view" data-guide-panel="transport">
+        <div class="gnote">
+          <h4>🗺️ 권역 구분 및 거점 &lt;별표 1&gt;</h4>
+        </div>
+        <div class="gscroll">
+          <table class="gtable">
+            <thead><tr><th>권역명</th><th>거점</th></tr></thead>
+            <tbody>
+              <tr><td class="k">서울 / 인천 / 경기도</td><td>서울 · 마곡본원</td></tr>
+              <tr><td class="k">충청북도</td><td>청주 · 오창분원</td></tr>
+              <tr><td class="k">대전 / 세종 / 충청남도</td><td>대전 · 대전시험인증센터</td></tr>
+              <tr><td class="k">전라북도</td><td>전주 · 전주시험인증센터</td></tr>
+              <tr><td class="k">광주 / 전라남도</td><td>광주 · 광주시험인증센터</td></tr>
+              <tr><td class="k">대구 / 경상북도</td><td>대구 · 대구시험인증센터</td></tr>
+              <tr><td class="k">부산 / 울산 / 경상남도</td><td>부산 · 부산시험인증센터</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="gnote" style="margin-top:14px">
+          <h4>🚌 교통비 &lt;별표 3&gt; <span class="sub">단위 : 천원 / 월</span></h4>
+        </div>
+        <div class="gscroll">
+          <table class="gtable num">
+            <thead><tr><th>거점</th><th>서울</th><th>청주</th><th>대전</th><th>대구</th><th>부산</th><th>전주</th><th>광주</th></tr></thead>
+            <tbody>
+              <tr><td class="k">서울</td><td class="no">–</td><td>111</td><td>143</td><td>261</td><td>359</td><td>208</td><td>282</td></tr>
+              <tr><td class="k">청주</td><td>111</td><td class="no">–</td><td class="no">미지원</td><td>149</td><td>254</td><td>100</td><td>154</td></tr>
+              <tr><td class="k">대전</td><td>143</td><td class="no">미지원</td><td class="no">–</td><td>119</td><td>218</td><td>68</td><td>136</td></tr>
+              <tr><td class="k">대구</td><td>261</td><td>149</td><td>119</td><td class="no">–</td><td>103</td><td>249</td><td>318</td></tr>
+              <tr><td class="k">부산</td><td>359</td><td>254</td><td>218</td><td>103</td><td class="no">–</td><td>353</td><td>422</td></tr>
+              <tr><td class="k">전주</td><td>208</td><td>100</td><td>68</td><td>249</td><td>353</td><td class="no">–</td><td>101</td></tr>
+              <tr><td class="k">광주</td><td>282</td><td>154</td><td>136</td><td>318</td><td>422</td><td>101</td><td class="no">–</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="gnote warn" style="margin-top:12px">
+          동일 권역 내 근무지의 편도거리가 50km 이상인 경우 기본 교통비 <b>월 15만원</b> 지원 (제4조 제4항)
+          <div class="sub">교통비는 <b>정액</b>(급여 합산) 또는 <b>실비</b>(한도 내 법인카드) 중 택일 · <b>개인차량 이용비용은 제외</b></div>
+        </div>
+      </div>
+
+      <!-- 4. 절차 · 보증 · 환수 -->
+      <div class="guide-view" data-guide-panel="process">
+        <div class="gnote">
+          <h4>📝 신청 절차 (제6조)</h4>
+          <ol>
+            <li>대상자는 <b>발령일로부터 7일 이내</b> 별지 제2호 신청서를 <b>경영본부 각 팀장</b>에게 제출</li>
+            <li>거주지원금 신청 시 <b>재무회계팀장</b>이 점검 후, 접수일로부터 <b>한 달 이내</b> 출금일정에 맞춰 지급</li>
+          </ol>
+          <div class="sub">주거주지 변경 시에는 별지 제1호 <b>주거주지 변경신고서</b>를 원장에게 제출 (제3조) · 미신고로 인한 불이익은 연구원이 부담하지 않음</div>
+        </div>
+
+        <div class="gnote accent">
+          <h4>🛡️ 거주지원금 반환 보증 (제7조)</h4>
+          <ul>
+            <li>전문보증기관 <b>보증보험 가입 및 증권 제출 필수</b></li>
+            <li>보험료는 <b>연구원 부담</b></li>
+            <li>보증금액 = <b>거주지원금 총액</b> / 보증기간 <b>26개월</b></li>
+            <li>연장 필요 시 <b>만료 5일 전까지</b> 동일 조건으로 갱신</li>
+          </ul>
+        </div>
+
+        <div class="gnote warn">
+          <h4>💸 거주지원금 환수 (제8조)</h4>
+          아래 사유 발생 시 <b>소멸일로부터 30일 이내</b> 반환
+          <ol>
+            <li>임대차계약의 만료</li>
+            <li>발령에 의거 비거주자 대상에서 제외된 경우</li>
+            <li>퇴직</li>
+          </ol>
+          <div class="sub">기일 내 미반환 시 지체일수만큼 <b>연리 5% 이자</b> 징수 또는 재무회계팀장 결정으로 보증보험 이행청구.
+            단, 임대인의 부득이한 사정으로 보증금 회수가 지체된 경우는 제외</div>
+        </div>
+
+        <div class="gnote">
+          <h4>📄 관련 서식</h4>
+          <ul>
+            <li><b>별지 제1호</b> — 주거주지 변경신고서 <span class="sub">(주민등록등본 · 이사비용 세금계산서/견적서 첨부, 이사비용 신청 시)</span></li>
+            <li><b>별지 제2호</b> — 비거주자 지원금 신규/변경 신청서</li>
+          </ul>
+          <div class="sub">주거주지를 발령일로부터 12개월 이내에 발령지 권역 내로 이전할 경우 이사비용 실비를 지원하며, 이후 비거주자 지원금은 지급하지 않음</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Share Summary Modal -->
+  <div id="share-modal" class="modal-bg share-modal hidden">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <h2>사택 계약 정보 요약안내</h2>
+          <p class="hint">현재 선택한 사택의 임차 주요 정보를 요약하여 전송용 텍스트를 구성했습니다.</p>
+        </div>
+        <button class="btn ghost small close-share-modal" type="button">닫기</button>
+      </div>
+      <div class="share-preview-info" id="share-target-info"></div>
+      <div>
+        <label>복사용 텍스트 내용</label>
+        <textarea id="share-message-text" class="share-message-box"></textarea>
+      </div>
+      <div class="share-actions">
+        <button id="copy-share-message" class="btn success" type="button">텍스트 복사</button>
+        <button class="btn ghost close-share-modal" type="button">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./xlsx.full.min.js" onerror="this.onerror=null; this.src='../02.화환대시보드/xlsx.full.min.js'; this.onerror=function(){this.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';}"></script>
+  
+  <script>
+    // ============================== 기본 상태 관리 및 옵션 ==============================
+    const STATUS_OPTIONS = [
+      {value:'active', label:'계약 유지'},
+      {value:'renew', label:'계약 갱신'},
+      {value:'implicit', label:'묵시적 갱신'},
+      {value:'expiring', label:'만료 예정'},
+      {value:'expired', label:'계약 만료'},
+      {value:'terminating', label:'해지 대기'},
+      {value:'terminated', label:'반납 완료'}
+    ];
+
+    const REGION_LIMITS = {
+      '서울': { deposit: 8900000, rent: 830000 },
+      '안산': { deposit: 6700000, rent: 560000 },
+      '청주': { deposit: 6100000, rent: 550000 },
+      '부산': { deposit: 5600000, rent: 560000 },
+      '대구': { deposit: 5500000, rent: 550000 },
+      '대전': { deposit: 5500000, rent: 450000 },
+      '울산': { deposit: 5200000, rent: 460000 },
+      '광주': { deposit: 3600000, rent: 410000 },
+      '전주': { deposit: 3600000, rent: 410000 },
+      '기타': { deposit: 3600000, rent: 410000 }
+    };
+
+    function getRegionFromAddress(address) {
+      const addr = String(address ?? '').trim();
+      if (!addr) return '기타';
+      if (addr.includes('서울')) return '서울';
+      if (addr.includes('안산')) return '안산';
+      if (addr.includes('청주') || addr.includes('오창') || addr.includes('충주')) return '청주';
+      if (addr.includes('부산')) return '부산';
+      if (addr.includes('대구')) return '대구';
+      if (addr.includes('대전')) return '대전';
+      if (addr.includes('울산')) return '울산';
+      if (addr.includes('광주')) return '광주';
+      if (addr.includes('전주')) return '전주';
+      return '기타';
+    }
+
+    function calculateExpectedEndDate(startDate, endDate, status) {
+      if (!endDate) return '';
+      
+      const today = new Date();
+      
+      let endYear, endMonth, endDay;
+      const mEnd = String(endDate).match(/(\d{4})[-.\/년\s]+(\d{1,2})[-.\/월\s]+(\d{1,2})/);
+      if (mEnd) {
+        endYear = Number(mEnd[1]);
+        endMonth = Number(mEnd[2]);
+        endDay = Number(mEnd[3]);
+      } else {
+        const d = new Date(endDate);
+        if (!isNaN(d.getTime())) {
+          endYear = d.getFullYear();
+          endMonth = d.getMonth() + 1;
+          endDay = d.getDate();
+        }
+      }
+
+      if (endYear && endMonth && endDay) {
+        let targetYear = endYear;
+        let targetMonth = endMonth;
+        let targetDay = endDay;
+        
+        const originalEndDate = new Date(endYear, endMonth - 1, endDay);
+        
+        // 1. If 2026 end date has passed today, make it 2027 (+1 year)
+        if (endYear === 2026 && originalEndDate.getTime() < today.getTime()) {
+          targetYear = 2027;
+        }
+        // 2. If 2025 end date, make it contract end date + 1 year (2026)
+        else if (endYear === 2025) {
+          targetYear = 2026;
+        }
+        // 3. Default: if status is 'implicit' and it has not been modified otherwise
+        else if (status === 'implicit' && originalEndDate.getTime() >= today.getTime()) {
+          targetYear = endYear + 1; // Default to +1 year extension
+        }
+        
+        const p = n => String(n).padStart(2, '0');
+        return `${targetYear}-${p(targetMonth)}-${p(targetDay)}`;
+      }
+      return '-';
+    }
+
+    function checkLimitCompliance(region, deposit, rent) {
+      const limit = REGION_LIMITS[region] || REGION_LIMITS['기타'];
+      const depVal = Number(deposit) || 0;
+      const rentVal = Number(rent) || 0;
+      
+      const depositExceeded = depVal > limit.deposit;
+      const rentExceeded = rentVal > limit.rent;
+      
+      // Formula: 기준보증금 + 기준월세 * 12 >= 실제보증금 * 1.05 + 실제월세 * 12
+      const limitTotal = limit.deposit + (limit.rent * 12);
+      const actualTotal = (depVal * 1.05) + (rentVal * 12);
+      const isFormulaCompliant = (limitTotal >= actualTotal);
+      
+      let status = '한도 충족';
+      
+      if (depVal !== limit.deposit || rentVal !== limit.rent) {
+        if (isFormulaCompliant) {
+          status = '한도 충족';
+        } else {
+          if (depositExceeded && rentExceeded) status = '보증금/월세 초과';
+          else if (depositExceeded) status = '보증금 초과';
+          else if (rentExceeded) status = '월세 초과';
+        }
+      }
+      
+      return {
+        depositExceeded: depositExceeded && !isFormulaCompliant,
+        rentExceeded: rentExceeded && !isFormulaCompliant,
+        limit,
+        status,
+        isFormulaCompliant
+      };
+    }
+
+    function updateSidebarComputedFields() {
+      const address = $('#d-address').value;
+      const status = $('#d-status').value;
+      const startDate = $('#d-start-date').value;
+      const endDate = $('#d-end-date').value;
+      const deposit = num($('#d-deposit').value);
+      const rent = num($('#d-rent').value);
+
+      const region = getRegionFromAddress(address);
+      const expectedEnd = calculateExpectedEndDate(startDate, endDate, status);
+      const compliance = checkLimitCompliance(region, deposit, rent);
+
+      $('#d-expected-end-date').value = expectedEnd || '';
+      $('#d-region').value = region;
+
+      const box = $('#d-compliance-box');
+      if (box) {
+        let text = `[${region} 기준] `;
+        text += `보증금 한도: ${money(compliance.limit.deposit)}원 (현재: ${money(deposit)}원) | `;
+        text += `월세 한도: ${money(compliance.limit.rent)}원 (현재: ${money(rent)}원)\n`;
+        text += `결과: ${compliance.status}`;
+
+        box.textContent = text;
+        if (compliance.status === '한도 충족') {
+          box.style.background = '#d1fae5';
+          box.style.color = '#047857';
+          box.style.border = '1.2px solid #10b981';
+        } else {
+          box.style.background = '#fee2e2';
+          box.style.color = '#b91c1c';
+          box.style.border = '1.2px solid #ef4444';
+        }
+      }
+    }
+
+    function updateAddModalComputedFields() {
+      const address = $('#a-address').value;
+      const status = $('#a-status').value;
+      const startDate = $('#a-start-date').value;
+      const endDate = $('#a-end-date').value;
+      const deposit = num($('#a-deposit').value);
+      const rent = num($('#a-rent').value);
+
+      const region = getRegionFromAddress(address);
+      const expectedEnd = calculateExpectedEndDate(startDate, endDate, status);
+      const compliance = checkLimitCompliance(region, deposit, rent);
+
+      $('#a-expected-end-date').value = expectedEnd || '';
+      $('#a-region').value = region;
+
+      const box = $('#a-compliance-box');
+      if (box) {
+        let text = `[${region} 기준] `;
+        text += `보증금 한도: ${money(compliance.limit.deposit)}원 (현재: ${money(deposit)}원) | `;
+        text += `월세 한도: ${money(compliance.limit.rent)}원 (현재: ${money(rent)}원)\n`;
+        text += `결과: ${compliance.status}`;
+
+        box.textContent = text;
+        if (compliance.status === '한도 충족') {
+          box.style.background = '#d1fae5';
+          box.style.color = '#047857';
+          box.style.border = '1.2px solid #10b981';
+        } else {
+          box.style.background = '#fee2e2';
+          box.style.color = '#b91c1c';
+          box.style.border = '1.2px solid #ef4444';
+        }
+      }
+    }
+
+    let state = {
+      user: '관리자',
+      role: 'manager',
+      data: [],
+      logs: [],
+      sourceFile: '',
+      originalFileName: ''
+    };
+
+    let currentDetailId = null;
+
+    const $ = s => document.querySelector(s);
+    const $$ = s => Array.from(document.querySelectorAll(s));
+
+    // ============================== 유틸 함수 ==============================
+    function nowText() {
+      const d = new Date();
+      const p = n => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+    }
+
+    function escapeHtml(v) {
+      return String(v ?? '').replace(/[&<>"']/g, m => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[m]));
+    }
+
+    function num(v) {
+      return Number(String(v ?? '').replace(/[^0-9.-]/g, '')) || 0;
+    }
+
+    /* =====================================================================
+       개인정보 마스킹
+       ---------------------------------------------------------------------
+       화면에 뿌리는 값만 가립니다. state.data 의 원본은 건드리지 않으므로
+       저장·엑셀 내보내기 결과에는 영향이 없습니다.
+       기본값은 '가림'이며, 상단 [개인정보 가림] 버튼으로 전환합니다.
+       ===================================================================== */
+    let maskOn = true;
+
+    // 홍길동 → 홍○동 / 김철 → 김○ / 남궁민수 → 남○○수
+    function maskName(v) {
+      const s = String(v ?? '').trim();
+      if (!s || s === '-') return s || '-';
+      if (s.length === 1) return s;
+      if (s.length === 2) return s[0] + '○';
+      return s[0] + '○'.repeat(s.length - 2) + s[s.length - 1];
+    }
+
+    // 경기도 오산시 경기대로 658번길 30 → 경기도 오산시 ○○○
+    // 앞 2어절(시·도 + 시·군·구)만 남기고 이후는 가립니다.
+    function maskAddress(v) {
+      const s = String(v ?? '').trim();
+      if (!s || s === '-') return s || '-';
+      const parts = s.split(/\s+/);
+      if (parts.length <= 2) return parts[0] + ' ○○○';
+      return parts.slice(0, 2).join(' ') + ' ○○○';
+    }
+
+    // 010-1234-5678 → 010-****-5678
+    function maskPhone(v) {
+      const s = String(v ?? '').trim();
+      if (!s || s === '-') return s || '-';
+      return s.replace(/(\d{2,3})[-\s.]?(\d{3,4})[-\s.]?(\d{4})/, '$1-****-$3');
+    }
+
+    // 계좌번호: 뒤 4자리만 남김
+    function maskAccount(v) {
+      const s = String(v ?? '').trim();
+      if (!s || s === '-') return s || '-';
+      const digits = s.replace(/\D/g, '');
+      if (digits.length < 5) return '****';
+      return '*'.repeat(Math.max(0, digits.length - 4)) + digits.slice(-4);
+    }
+
+    // 마스킹이 켜져 있을 때만 가립니다.
+    const mName    = v => maskOn ? maskName(v)    : (v ?? '-');
+    const mAddress = v => maskOn ? maskAddress(v) : (v ?? '-');
+    const mPhone   = v => maskOn ? maskPhone(v)   : (v ?? '-');
+    const mAccount = v => maskOn ? maskAccount(v) : (v ?? '-');
+
+    function money(v) {
+      return num(v).toLocaleString('ko-KR');
+    }
+
+    function monthKey(v) {
+      const raw = String(v ?? '').trim();
+      if (!raw) return '만료일 미입력';
+      const m = raw.match(/(\d{4})[-.\/년\s]*(\d{1,2})/);
+      if (m) return `${m[1]}-${String(Number(m[2])).padStart(2, '0')}`;
+      const d = new Date(raw);
+      if (!isNaN(d.getTime())) return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}`;
+      return '만료일 미입력';
+    }
+
+    function statusLabel(v) {
+      return STATUS_OPTIONS.find(s => s.value === v)?.label || v || '-';
+    }
+
+    function statusBadge(v) {
+      return `<span class="status s-${escapeHtml(v)}">${escapeHtml(statusLabel(v))}</span>`;
+    }
+
+    // 변경이력 대상 포맷
+    function targetName(r) {
+      return `#${r.id} ${r.manager || '-'}(${r.dept || '-'}) / ${r.address || '-'}`;
+    }
+
+    function addLog(action, rowId, target, before, after, reason = '') {
+      state.logs.unshift({
+        time: nowText(),
+        user: state.user || '미로그인',
+        role: state.role,
+        action,
+        rowId,
+        target,
+        before: String(before ?? ''),
+        after: String(after ?? ''),
+        reason: String(reason ?? '')
+      });
+    }
+
+    function isDeletedLog(log) {
+      const act = String(log?.action || '');
+      return act.includes('삭제') || String(log?.after || '').includes('삭제됨');
+    }
+
+    function logActionHtml(log) {
+      const deleted = isDeletedLog(log);
+      return `<span class="log-badge ${deleted ? 'deleted' : 'normal'}">${escapeHtml(log.action || '-')}</span>`;
+    }
+
+    // 엑셀 재업로드 시 감지용 고유 아이덴티티 구성 (핵심 계약 정보 변경여부 검사)
+    function rowIdentity(r) {
+      return [r.manager, r.dept, r.startDate, r.endDate, num(r.rent), num(r.deposit), r.address, r.areaType, r.areaSize, r.lessorName, r.lessorPhone, r.bank, r.accountNo]
+        .map(v => String(v ?? '').trim().replace(/\s+/g, ' '))
+        .join('||');
+    }
+
+    function detectDeletedRowsOnReload(previousRows, nextRows, fileName) {
+      if (!previousRows.length) return 0;
+      const nextKeys = new Set(nextRows.map(rowIdentity));
+      const deletedRows = previousRows.filter(oldRow => {
+        const key = rowIdentity(oldRow);
+        return key && !nextKeys.has(key);
+      });
+
+      deletedRows.forEach(oldRow => {
+        addLog(
+          '삭제됨 / 원본 삭제 감지',
+          oldRow.id,
+          targetName(oldRow),
+          `기존 보증금/월세: ${money(oldRow.deposit)}/${money(oldRow.rent)}`,
+          `삭제됨 / 관리대상 제외`,
+          `${fileName} 업로드 시 해당 건이 새 파일에서 제외되어 삭제 감지됨`
+        );
+      });
+      return deletedRows.length;
+    }
+
+    function resetFilters() {
+      $('#q').value = '';
+      ['#filter-dept', '#filter-region', '#filter-type', '#filter-status', '#filter-expiry', '#filter-rentfee'].forEach(s => {
+        if ($(s)) $(s).value = 'all';
+      });
+      if ($('#sort-key')) $('#sort-key').value = 'id';
+      if ($('#sort-order')) $('#sort-order').value = 'asc';
+      if ($('#exclude-terminated')) $('#exclude-terminated').checked = true;
+    }
+
+    // ============================== CSV 백업 파서 ==============================
+    function parseCSV(text) {
+      const rows = []; let row = [], cell = '', quoted = false;
+      text = text.replace(/^\uFEFF/, '');
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i], n = text[i+1];
+        if (c === '"' && quoted && n === '"') { cell += '"'; i++; }
+        else if (c === '"') { quoted = !quoted; }
+        else if (c === ',' && !quoted) { row.push(cell); cell = ''; }
+        else if ((c === '\n' || c === '\r') && !quoted) {
+          if (c === '\r' && n === '\n') i++;
+          row.push(cell);
+          if (row.some(x => String(x).trim() !== '')) rows.push(row);
+          row = []; cell = '';
+        }
+        else cell += c;
+      }
+      row.push(cell);
+      if (row.some(x => String(x).trim() !== '')) rows.push(row);
+      return rows;
+    }
+
+    // ============================== 데이터 정규화 및 매핑 ==============================
+    function normalizeHeader(v) {
+      return String(v ?? '').replace(/\s/g, '').replace(/[()\[\]\/·_\-\n]/g, '').toLowerCase();
+    }
+
+    function findCol(headers, keywords) {
+      const normalized = headers.map(normalizeHeader);
+      for (const key of keywords) {
+        const k = normalizeHeader(key);
+        const exact = normalized.findIndex(h => h === k);
+        if (exact >= 0) return exact;
+        const includes = normalized.findIndex(h => h.includes(k));
+        if (includes >= 0) return includes;
+      }
+      return -1;
+    }
+
+    function excelSerialToDate(v) {
+      if (v instanceof Date && !isNaN(v)) {
+        const p = n => String(n).padStart(2, '0');
+        return `${v.getFullYear()}-${p(v.getMonth()+1)}-${p(v.getDate())}`;
+      }
+      if (typeof v === 'number' && v > 20000 && v < 80000) {
+        const d = new Date(Date.UTC(1899, 11, 30) + v * 86400000);
+        return d.toISOString().slice(0, 10);
+      }
+      // 날짜 파싱
+      let s = String(v ?? '').trim();
+      const match = s.match(/(\d{4})[-.\/년\s]+(\d{1,2})[-.\/월\s]+(\d{1,2})/);
+      if (match) {
+        const p = n => String(Number(n)).padStart(2, '0');
+        return `${match[1]}-${p(match[2])}-${p(match[3])}`;
+      }
+      return s;
+    }
+
+    function removeBlankRows(rows) {
+      return rows.filter(r => Array.isArray(r) && r.some(c => String(c ?? '').trim() !== ''));
+    }
+
+    function detectHeaderIndex(rows) {
+      for (let i = 0; i < Math.min(rows.length, 10); i++) {
+        const text = rows[i].map(x => String(x ?? '')).join(' ');
+        if ((text.includes('담당') || text.includes('직원') || text.includes('임차')) && (text.includes('기간') || text.includes('보증금') || text.includes('주소'))) return i;
+      }
+      return 0;
+    }
+
+    function mapRowsToData(rawRows) {
+      const rows = removeBlankRows(rawRows);
+      if (rows.length < 2) return [];
+      
+      const headerIndex = detectHeaderIndex(rows);
+      
+      let headers = [];
+      let bodyStartIndex = headerIndex + 1;
+      
+      const mainHeader = rows[headerIndex].map(x => String(x ?? '').trim());
+      const subHeader = (headerIndex + 1 < rows.length) ? rows[headerIndex + 1].map(x => String(x ?? '').trim()) : [];
+      
+      // 하위 헤더가 계약 정보 관련 키워드를 포함하는지 체크하여 2중 헤더 여부 판별
+      const hasSubHeader = subHeader.some(sh => sh.includes('시작') || sh.includes('종료') || sh.includes('전화') || sh.includes('계좌') || sh.includes('은행') || sh.includes('이름') || sh.includes('평') || sh.includes('㎡'));
+      
+      if (hasSubHeader) {
+        headers = mainHeader.map((hVal, idx) => {
+          const parent = hVal;
+          const child = subHeader[idx] || '';
+          if (parent && child) {
+            // 부모와 자식 헤더가 모두 있으면 결합 (예: 임차기간_계약시작 일자)
+            return `${parent}_${child}`;
+          }
+          return parent || child;
+        });
+        bodyStartIndex = headerIndex + 2;
+      } else {
+        headers = mainHeader;
+        bodyStartIndex = headerIndex + 1;
+      }
+
+      const body = rows.slice(bodyStartIndex);
+
+      const col = {
+        manager: findCol(headers, ['담당자', '성명', '사용자', '임차인', '이름']),
+        dept: findCol(headers, ['담당부서', '부서', '소속']),
+        startDate: findCol(headers, ['계약시작일자', '계약시작일', '시작일', '계약시작', '임차기간계약시작일자']),
+        endDate: findCol(headers, ['계약종료일자', '계약종료일', '종료일', '계약종료', '임차기간계약종료일자']),
+        moneyCol: findCol(headers, ['월세/보증금', '보증금/월세', '월세/보증금(원)', '월세보증금', '전세/보증금']),
+        deposit: findCol(headers, ['보증금', '임차보증금']),
+        rent: findCol(headers, ['월세', '임차료', '임대료']),
+        address: findCol(headers, ['주소지', '주소', '소재지']),
+        area: findCol(headers, ['면적', '평형', '크기', '면적(평)', '면적(평/㎡)', '현황']),
+        lessor: findCol(headers, ['임대인정보', '임대인', '이름/전화번호', '임대인정보(이름/전화번호)']),
+        account: findCol(headers, ['계좌번호', '계좌', '은행/계좌번호', '계좌번호(은행/계좌번호)']),
+        lesseeChange: findCol(headers, ['임차인변경이력', '변경이력', '임차인변경']),
+        remarks: findCol(headers, ['비고', '특이사항']),
+        rentFee: findCol(headers, ['월세+관리비', '관리비구분', '관리비', '월세+관리비(원)']),
+        status: findCol(headers, ['상태', '임차상태', '계약상태']),
+        expectedEndDate: findCol(headers, ['예상종료일자', '예상종료일', '예상종료'])
+      };
+
+      return body.map((r, i) => {
+        // Parse 월세 & 보증금
+        let parsedRent = 0;
+        let parsedDeposit = 0;
+        if (col.moneyCol >= 0 && r[col.moneyCol] !== undefined) {
+          const moneyVal = String(r[col.moneyCol] ?? '').trim();
+          if (moneyVal.includes('/')) {
+            const parts = moneyVal.split('/');
+            parsedRent = num(parts[0]);
+            parsedDeposit = num(parts[1]);
+          } else {
+            parsedRent = num(moneyVal);
+          }
+        } else {
+          if (col.rent >= 0) parsedRent = num(r[col.rent]);
+          if (col.deposit >= 0) parsedDeposit = num(r[col.deposit]);
+        }
+
+        // Parse area & room type
+        let parsedAreaType = '';
+        let parsedAreaSize = '';
+        if (col.area >= 0 && r[col.area] !== undefined) {
+          const areaVal = String(r[col.area] ?? '').trim();
+          if (areaVal.includes('/')) {
+            const parts = areaVal.split('/');
+            parsedAreaType = parts[0].trim();
+            parsedAreaSize = parts[1].trim();
+          } else {
+            parsedAreaType = areaVal;
+          }
+        }
+
+        // Parse lessor
+        let parsedLessorName = '';
+        let parsedLessorPhone = '';
+        if (col.lessor >= 0 && r[col.lessor] !== undefined) {
+          const lessorVal = String(r[col.lessor] ?? '').trim();
+          if (lessorVal.includes('/')) {
+            const parts = lessorVal.split('/');
+            parsedLessorName = parts[0].trim();
+            parsedLessorPhone = parts[1].trim();
+          } else {
+            parsedLessorName = lessorVal;
+          }
+        }
+
+        // Parse bank & account
+        let parsedBank = '';
+        let parsedAccountNo = '';
+        if (col.account >= 0 && r[col.account] !== undefined) {
+          const accountVal = String(r[col.account] ?? '').trim();
+          if (accountVal.includes('/')) {
+            const parts = accountVal.split('/');
+            parsedBank = parts[0].trim();
+            parsedAccountNo = parts[1].trim();
+          } else {
+            parsedBank = accountVal;
+          }
+        }
+
+        // Auto calculate status from dates
+        let calculatedStatus = 'active';
+        const endStr = excelSerialToDate(r[col.endDate]);
+        if (endStr) {
+          const endD = new Date(endStr);
+          if (!isNaN(endD.getTime())) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const threeMonthsLater = new Date();
+            threeMonthsLater.setDate(today.getDate() + 90);
+
+            if (endD < today) {
+              calculatedStatus = 'expired';
+            } else if (endD <= threeMonthsLater) {
+              calculatedStatus = 'expiring';
+            }
+          }
+        }
+
+        // Override if status column explicitly exists
+        let finalStatus = calculatedStatus;
+        if (col.status >= 0 && r[col.status] !== undefined) {
+          const rawStatus = String(r[col.status] ?? '').trim();
+          const mapped = STATUS_OPTIONS.find(s => s.label === rawStatus || s.value === rawStatus);
+          if (mapped) finalStatus = mapped.value;
+          else if (rawStatus.includes('암묵적') || rawStatus.includes('묵시적') || rawStatus.includes('암묵') || rawStatus.includes('묵시')) finalStatus = 'implicit';
+          else if (rawStatus.includes('갱신')) finalStatus = 'renew';
+          else if (rawStatus.includes('만료')) finalStatus = 'expired';
+          else if (rawStatus.includes('해지')) finalStatus = 'terminating';
+          else if (rawStatus.includes('반납')) finalStatus = 'terminated';
+        }
+
+        return {
+          id: i + 1,
+          manager: String(r[col.manager] ?? '').trim(),
+          dept: String(r[col.dept] ?? '').trim(),
+          startDate: excelSerialToDate(r[col.startDate]),
+          endDate: excelSerialToDate(r[col.endDate]),
+          rent: parsedRent,
+          deposit: parsedDeposit,
+          address: String(r[col.address] ?? '').trim(),
+          areaType: parsedAreaType,
+          areaSize: parsedAreaSize,
+          lessorName: parsedLessorName,
+          lessorPhone: parsedLessorPhone,
+          bank: parsedBank,
+          accountNo: parsedAccountNo,
+          lesseeChange: String(r[col.lesseeChange] ?? '').trim(),
+          remarks: String(r[col.remarks] ?? '').trim(),
+          rentFee: String(r[col.rentFee] ?? '').trim(),
+          status: finalStatus,
+          expectedEndDate: col.expectedEndDate >= 0 && r[col.expectedEndDate] !== undefined ? excelSerialToDate(r[col.expectedEndDate]) : ''
+        };
+      }).filter(r => [r.manager, r.dept, r.address, r.remarks].some(v => String(v).trim() !== '') || r.rent > 0 || r.deposit > 0);
+    }
+
+    async function readUploadedFile(file) {
+      const ext = file.name.split('.').pop().toLowerCase();
+      if (ext === 'csv') {
+        const text = await file.text();
+        return mapRowsToData(parseCSV(text));
+      }
+
+      if (ext === 'xlsx' || ext === 'xls') {
+        if (typeof XLSX === 'undefined') {
+          throw new Error('Excel 라이브러리가 로드되지 않았습니다. 네트워크 연결을 확인하거나 xlsx.full.min.js 파일을 배치해주세요.');
+        }
+        const buffer = await file.arrayBuffer();
+        const workbook = XLSX.read(buffer, {
+          type: 'array',
+          cellDates: true,
+          raw: false
+        });
+
+        const firstSheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[firstSheetName];
+        const rows = XLSX.utils.sheet_to_json(sheet, {
+          header: 1,
+          defval: ''
+        });
+
+        return mapRowsToData(rows);
+      }
+
+      throw new Error('지원하지 않는 파일 형식입니다. .xlsx, .xls, .csv 파일만 읽어올 수 있습니다.');
+    }
+
+    // ============================== 필터링 및 정렬 처리 ==============================
+    function fillUnique(selector, key) {
+      const current = $(selector).value;
+      const list = [...new Set(state.data.map(r => r[key]).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b), 'ko'));
+      $(selector).innerHTML = '<option value="all">전체</option>' + list.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+      if (list.includes(current)) $(selector).value = current;
+    }
+
+    function fillFilters() {
+      const statusCurrent = $('#filter-status').value;
+      $('#filter-status').innerHTML = '<option value="all">전체</option>' + STATUS_OPTIONS.map(s => `<option value="${s.value}">${s.label}</option>`).join('');
+      $('#filter-status').value = STATUS_OPTIONS.some(s => s.value === statusCurrent) ? statusCurrent : 'all';
+
+      $('#d-status').innerHTML = STATUS_OPTIONS.map(s => `<option value="${s.value}">${s.label}</option>`).join('');
+      $('#a-status').innerHTML = STATUS_OPTIONS.map(s => `<option value="${s.value}">${s.label}</option>`).join('');
+
+      fillUnique('#filter-dept', 'dept');
+      fillUnique('#filter-type', 'areaType');
+      fillUnique('#filter-rentfee', 'rentFee');
+    }
+
+    function sortDateValue(v) {
+      const raw = String(v ?? '').trim();
+      if (!raw) return 0;
+      const d = new Date(raw);
+      return isNaN(d.getTime()) ? 0 : d.getTime();
+    }
+
+    function filteredData() {
+      const q = $('#q').value.trim().toLowerCase();
+      const dept = $('#filter-dept').value;
+      const regionFilter = $('#filter-region')?.value || 'all';
+      const type = $('#filter-type').value;
+      const st = $('#filter-status').value;
+      const expiry = $('#filter-expiry').value;
+      const rentfee = $('#filter-rentfee').value;
+      const sortKey = $('#sort-key')?.value || 'id';
+      const sortOrder = $('#sort-order')?.value === 'desc' ? 'desc' : 'asc';
+      const excludeTerminated = $('#exclude-terminated')?.checked ?? true;
+
+      const result = state.data.filter(r => {
+        // Text Search
+        const text = [
+          r.manager, r.dept, r.address, r.remarks, r.areaType, r.areaSize, r.lessorName, r.lessorPhone, r.bank, r.accountNo, statusLabel(r.status)
+        ].join(' ').toLowerCase();
+
+        let matchesExpiry = true;
+        if (expiry === 'soon') {
+          matchesExpiry = (r.status === 'expiring');
+        } else if (expiry === 'expired') {
+          matchesExpiry = (r.status === 'expired');
+        }
+
+        const region = getRegionFromAddress(r.address);
+        const matchesRegion = (regionFilter === 'all' || region === regionFilter);
+        const matchesExclude = !excludeTerminated || r.status !== 'terminated';
+
+        return (!q || text.includes(q)) &&
+          (dept === 'all' || r.dept === dept) &&
+          matchesRegion &&
+          (type === 'all' || r.areaType === type) &&
+          (st === 'all' || r.status === st) &&
+          (rentfee === 'all' || r.rentFee === rentfee) &&
+          matchesExpiry &&
+          matchesExclude;
+      });
+
+      // Sort
+      result.sort((a, b) => {
+        let compare = 0;
+        if (sortKey === 'rent' || sortKey === 'deposit' || sortKey === 'id') {
+          compare = num(a[sortKey]) - num(b[sortKey]);
+        } else if (sortKey === 'endDate' || sortKey === 'startDate') {
+          compare = sortDateValue(a[sortKey]) - sortDateValue(b[sortKey]);
+        } else {
+          compare = String(a[sortKey] || '').localeCompare(String(b[sortKey] || ''), 'ko');
+        }
+
+        if (compare === 0) compare = num(a.id) - num(b.id);
+        return sortOrder === 'asc' ? compare : -compare;
+      });
+
+      return result;
+    }
+
+    // ============================== KPI & 차트 렌더러 ==============================
+    const CHART_COLORS = ['#1e40af', '#0d9488', '#0ea5e9', '#8b5cf6', '#f59e0b', '#ef4444', '#10b981', '#475569'];
+    const MONTH_COLORS = ['#0f766e', '#059669', '#16a34a', '#65a30d', '#ca8a04', '#ea580c', '#dc2626', '#be123c', '#9333ea', '#4f46e5', '#2563eb', '#0891b2'];
+
+    function renderBarChart(selector, entries) {
+      const max = Math.max(1, ...entries.map(e => e[1]));
+      $(selector).innerHTML = entries.length ? entries.map(([name, count], idx) => `
+        <div class="barline">
+          <div title="${escapeHtml(name)}">${escapeHtml(name)}</div>
+          <div class="barbg">
+            <div class="bar" style="width:${Math.round(count/max*100)}%; background:${CHART_COLORS[idx % CHART_COLORS.length]}"></div>
+          </div>
+          <strong>${count} 건</strong>
+        </div>`).join('') : '<p class="hint">분석할 사택 데이터가 없습니다.</p>';
+    }
+
+    function renderExpiryChart(selector, entries) {
+      const max = Math.max(1, ...entries.map(e => e[1]));
+      $(selector).innerHTML = entries.length ? entries.map(([name, count], idx) => `
+        <div class="barline">
+          <div title="${escapeHtml(name)}">${escapeHtml(name)}</div>
+          <div class="barbg">
+            <div class="bar" style="width:${Math.round(count/max*100)}%; background:${MONTH_COLORS[idx % MONTH_COLORS.length]}"></div>
+          </div>
+          <strong>${count} 건</strong>
+        </div>`).join('') : '<p class="hint">만료 임박 예정 분석이 불가합니다.</p>';
+    }
+
+    function renderSummary() {
+      let exceededDepositCount = 0;
+      let exceededRentCount = 0;
+      let exceededBothCount = 0;
+      
+      state.data.forEach(r => {
+        const reg = getRegionFromAddress(r.address);
+        const comp = checkLimitCompliance(reg, r.deposit, r.rent);
+        if (comp.status === '보증금/월세 초과') exceededBothCount++;
+        else if (comp.status === '보증금 초과') exceededDepositCount++;
+        else if (comp.status === '월세 초과') exceededRentCount++;
+      });
+
+      $('#kpi-total').textContent = state.data.length;
+      
+      $('#kpi-deposit').innerHTML = money(state.data.reduce((a, r) => a + num(r.deposit), 0)) + '원' + 
+        (exceededDepositCount + exceededBothCount > 0 
+          ? `<br><span style="font-size:11px; color:var(--red); font-weight:800;">(초과 ${exceededDepositCount + exceededBothCount}건)</span>`
+          : '');
+      
+      $('#kpi-rent').innerHTML = money(state.data.reduce((a, r) => a + num(r.rent), 0)) + '원' +
+        (exceededRentCount + exceededBothCount > 0 
+          ? `<br><span style="font-size:11px; color:var(--red); font-weight:800;">(초과 ${exceededRentCount + exceededBothCount}건)</span>`
+          : '');
+
+      $('#kpi-expiring').textContent = state.data.filter(r => r.status === 'expiring').length;
+      $('#kpi-expired').textContent = state.data.filter(r => r.status === 'expired').length;
+      
+      const activeContracts = state.data.filter(r => r.status !== 'terminated');
+      $('#kpi-avg-rent').textContent = activeContracts.length 
+        ? money(Math.round(activeContracts.reduce((a, r) => a + num(r.rent), 0) / activeContracts.length)) + '원'
+        : '0원';
+
+      // Type Chart
+      const typeCounts = {};
+      state.data.forEach(r => {
+        const k = r.areaType || '형태 미지정';
+        typeCounts[k] = (typeCounts[k] || 0) + 1;
+      });
+      renderBarChart('#type-chart', Object.entries(typeCounts).sort((a, b) => b[1] - a[1]));
+
+      // Dept Chart
+      const deptCounts = {};
+      state.data.forEach(r => {
+        const k = r.dept || '부서 미입력';
+        deptCounts[k] = (deptCounts[k] || 0) + 1;
+      });
+      renderBarChart('#dept-chart', Object.entries(deptCounts).sort((a, b) => b[1] - a[1]).slice(0, 5));
+
+      // Expiry Chart
+      const expiryCounts = {};
+      state.data.forEach(r => {
+        if (r.status !== 'terminated' && r.endDate) {
+          const key = monthKey(r.endDate);
+          expiryCounts[key] = (expiryCounts[key] || 0) + 1;
+        }
+      });
+      const sortedExpiry = Object.entries(expiryCounts)
+        .filter(([k]) => k !== '만료일 미입력')
+        .sort((a, b) => String(a[0]).localeCompare(String(b[0])));
+      renderExpiryChart('#expiry-chart', sortedExpiry.slice(0, 6));
+
+      // Region Compliance Summary Panel
+      const regionCounts = {};
+      const regionExceeded = {};
+      Object.keys(REGION_LIMITS).forEach(reg => {
+        regionCounts[reg] = 0;
+        regionExceeded[reg] = 0;
+      });
+      state.data.forEach(r => {
+        const reg = getRegionFromAddress(r.address);
+        regionCounts[reg] = (regionCounts[reg] || 0) + 1;
+        const comp = checkLimitCompliance(reg, r.deposit, r.rent);
+        if (comp.status !== '한도 충족') {
+          regionExceeded[reg] = (regionExceeded[reg] || 0) + 1;
+        }
+      });
+
+      const complianceHtml = Object.entries(regionCounts)
+        .filter(([reg, count]) => reg !== '기타' && (count > 0 || reg === '서울'))
+        .map(([reg, count]) => {
+          const limit = REGION_LIMITS[reg] || REGION_LIMITS['기타'];
+          const exceeded = regionExceeded[reg] || 0;
+          const exceededText = exceeded > 0 
+            ? `<span style="color:var(--red); font-weight:800; margin-left: 6px;">(초과 ${exceeded}건)</span>`
+            : `<span style="color:var(--green); font-weight:800; margin-left: 6px;">(충족)</span>`;
+          return `
+            <div style="font-size:11px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed #e2e8f0; padding-bottom:4px;">
+              <div>
+                <strong>${reg}</strong> 
+                <span class="muted" style="font-size:10px;">(보증금 ${money(limit.deposit/10000)}만 / 월세 ${money(limit.rent/10000)}만)</span>
+              </div>
+              <div style="text-align:right;">
+                <strong>${count}건</strong> ${exceededText}
+              </div>
+            </div>`;
+        }).join('');
+
+      $('#compliance-chart').innerHTML = `<div style="max-height:180px; overflow-y:auto;">${complianceHtml}</div>` || '<p class="hint">분석할 사택 데이터가 없습니다.</p>';
+    }
+
+    // ============================== 메인 그리드 및 테이블 ==============================
+    function renderTable() {
+      const data = filteredData();
+      if (!state.data.length) {
+        $('#tbody').innerHTML = '<tr><td colspan="11" class="empty">가져온 사택 데이터가 존재하지 않습니다.<br>상단에서 사택임차현황 엑셀을 업로드해주세요.</td></tr>';
+        return;
+      }
+      if (!data.length) {
+        $('#tbody').innerHTML = '<tr><td colspan="11" class="empty">필터 조건에 부합하는 사택 계약이 없습니다.<br>통합검색 키워드나 필터링 값을 재설정해 주세요.</td></tr>';
+        return;
+      }
+
+      $('#tbody').innerHTML = data.map(r => {
+        const region = getRegionFromAddress(r.address);
+        const expectedEnd = r.expectedEndDate || calculateExpectedEndDate(r.startDate, r.endDate, r.status);
+        const compliance = checkLimitCompliance(region, r.deposit, r.rent);
+        
+        let complianceBadge = '';
+        if (compliance.status === '한도 충족') {
+          complianceBadge = `<span class="status s-active" style="padding: 2px 6px; font-size: 10px; margin-top: 4px; display: inline-block;">충족</span>`;
+        } else {
+          complianceBadge = `<span class="status s-expired" style="padding: 2px 6px; font-size: 10px; margin-top: 4px; display: inline-block; background: #fee2e2; color: #b91c1c;">${compliance.status}</span>`;
+        }
+
+        return `
+          <tr class="data-row ${currentDetailId === r.id ? 'selected' : ''}" data-id="${r.id}">
+            <td>${r.id}</td>
+            <td><span class="pill" style="background:#eef2ff; color:#3730a3; padding: 4px 8px; font-size: 11px;">${escapeHtml(region)}</span></td>
+            <td><b>${escapeHtml(mName(r.manager || '-'))}</b></td>
+            <td>${escapeHtml(r.dept || '-')}</td>
+            <td>${escapeHtml(r.startDate || '-')}</td>
+            <td>${escapeHtml(r.endDate || '-')}</td>
+            <td><b>${escapeHtml(expectedEnd || '-')}</b></td>
+            <td class="price">
+              <b>${money(r.rent)}</b> <span class="muted">/ ${money(r.deposit)}</span>
+              <br>${complianceBadge}
+            </td>
+            <td><div class="clip">${escapeHtml(mAddress(r.address || '-'))}</div></td>
+            <td>
+              <select class="row-status" data-id="${r.id}" ${state.role !== 'manager' ? 'disabled' : ''}>
+                ${STATUS_OPTIONS.map(s => `<option value="${s.value}" ${s.value === r.status ? 'selected' : ''}>${s.label}</option>`).join('')}
+              </select>
+            </td>
+            <td><div class="clip">${escapeHtml(r.rentFee || '-')}</div></td>
+          </tr>`;
+      }).join('');
+
+      // Table row status selection change
+      $$('.row-status').forEach(sel => {
+        sel.addEventListener('click', e => e.stopPropagation());
+        sel.addEventListener('change', e => {
+          e.stopPropagation();
+          const row = state.data.find(x => x.id === Number(e.target.dataset.id));
+          if (!row) return;
+          
+          const before = statusLabel(row.status);
+          const after = statusLabel(e.target.value);
+          const reason = prompt('상태 변경에 대한 간략한 사유를 입력하세요. (기록용)', '') || '';
+          
+          row.status = e.target.value;
+          addLog('임차상태 직접변경', row.id, targetName(row), before, after, reason);
+          currentDetailId = row.id;
+          renderAll(false);
+          openDetail(row.id);
+        });
+      });
+
+      $$('.data-row').forEach(tr => {
+        tr.addEventListener('click', () => openDetail(Number(tr.dataset.id)));
+      });
+    }
+
+    function renderLogs() {
+      const hideDeleteLogs = $('#hide-delete-logs')?.checked || false;
+      const logsToRender = hideDeleteLogs 
+        ? state.logs.filter(l => !isDeletedLog(l))
+        : state.logs;
+
+      $('#log-body').innerHTML = logsToRender.length 
+        ? logsToRender.slice(0, 150).map(l => `
+          <tr class="${isDeletedLog(l) ? 'log-deleted' : ''}">
+            <td>${escapeHtml(l.time)}</td>
+            <td>${escapeHtml(l.user)}<br><span class="muted">${escapeHtml(l.role === 'manager' ? '관리자' : '일반')}</span></td>
+            <td>${logActionHtml(l)}</td>
+            <td><div class="clip">${escapeHtml(l.target)}</div></td>
+            <td><div class="clip">${escapeHtml(l.before)}</div></td>
+            <td><div class="clip">${escapeHtml(l.after)}</div></td>
+            <td><div class="clip">${escapeHtml(l.reason || '-')}</div></td>
+          </tr>`).join('') 
+        : '<tr><td colspan="7" class="empty">시스템 변경 로그 이력이 없습니다.</td></tr>';
+    }
+
+    function renderAll(rebuildFilters = true) {
+      if (rebuildFilters) fillFilters();
+      renderSummary();
+      renderTable();
+      renderLogs();
+      $('#source-info').textContent = `현재 불러온 파일: ${state.sourceFile || '없음 (임시 세션)'}`;
+    }
+
+    // ============================== 상세조회 및 사이드바 제어 ==============================
+    function openDetail(id) {
+      const r = state.data.find(x => x.id === id);
+      if (!r) return;
+      currentDetailId = id;
+
+      $('#sidebar-empty')?.classList.add('hidden');
+      $('#sidebar-content')?.classList.remove('hidden');
+      $('#detail-sub').textContent = `선택 사택: ${mName(r.manager || '-')}(${r.dept || '-'})`;
+
+      // Form bindings
+      $('#d-manager').value = mName(r.manager || '');
+      $('#d-manager').dataset.real = r.manager || '';
+      $('#d-manager').readOnly = maskOn;
+      $('#d-dept').value = r.dept || '';
+      $('#d-start-date').value = r.startDate || '';
+      $('#d-end-date').value = r.endDate || '';
+      $('#d-deposit').value = num(r.deposit) || '';
+      $('#d-rent').value = num(r.rent) || '';
+      $('#d-rentfee').value = r.rentFee || '';
+      $('#d-address').value = mAddress(r.address || '');
+      $('#d-address').dataset.real = r.address || '';
+      $('#d-address').readOnly = maskOn;
+      $('#d-area-type').value = r.areaType || '';
+      $('#d-area-size').value = r.areaSize || '';
+      
+      $('#d-lessor-name').value = r.lessorName || '';
+      $('#d-lessor-phone').value = r.lessorPhone || '';
+      $('#d-bank').value = r.bank || '';
+      $('#d-account-no').value = r.accountNo || '';
+      
+      $('#d-lessee-change').value = r.lesseeChange || '';
+      $('#d-remarks').value = r.remarks || '';
+      
+      $('#d-status').value = r.status || 'active';
+      $('#d-expected-end-date').value = r.expectedEndDate || calculateExpectedEndDate(r.startDate, r.endDate, r.status);
+      $('#d-reason-change').value = '';
+
+      updateSidebarComputedFields();
+
+      // Edit permission check
+      if (state.role !== 'manager') {
+        $$('#sidebar-content input, #sidebar-content textarea, #sidebar-content select').forEach(el => el.disabled = true);
+        $('#delete-detail').style.display = 'none';
+        $('#save-detail').style.display = 'none';
+      } else {
+        $$('#sidebar-content input, #sidebar-content textarea, #sidebar-content select').forEach(el => el.disabled = false);
+        $('#delete-detail').style.display = 'block';
+        $('#save-detail').style.display = 'block';
+      }
+
+      // Specific row history
+      const rowLogs = state.logs.filter(l => l.rowId === id);
+      $('#detail-log-body').innerHTML = rowLogs.length 
+        ? rowLogs.map(l => `
+          <tr class="${isDeletedLog(l) ? 'log-deleted' : ''}">
+            <td>${escapeHtml(l.time.slice(5))}</td>
+            <td>${logActionHtml(l)}</td>
+            <td>${escapeHtml(l.before)}</td>
+            <td>${escapeHtml(l.after)}</td>
+          </tr>`).join('') 
+        : '<tr><td colspan="4" class="empty">사택 변경 이력이 없습니다.</td></tr>';
+
+      renderTable();
+    }
+
+    function closeDetailSidebar() {
+      currentDetailId = null;
+      $('#sidebar-content')?.classList.add('hidden');
+      $('#sidebar-empty')?.classList.remove('hidden');
+      $('#detail-sub').textContent = '목록에서 행을 클릭하면 이곳에 계약의 세부 내역이 나타납니다.';
+      renderTable();
+    }
+
+    function closeModals() {
+      $$('.modal-bg').forEach(m => m.classList.add('hidden'));
+    }
+
+    // ============================== 신규 추가 처리 ==============================
+    function todayInputValue() {
+      const d = new Date();
+      const p = n => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+    }
+
+    function nextRowId() {
+      return state.data.length ? Math.max(...state.data.map(r => Number(r.id) || 0)) + 1 : 1;
+    }
+
+    function clearAddForm() {
+      $('#a-manager').value = '';
+      $('#a-dept').value = '';
+      $('#a-start-date').value = todayInputValue();
+      $('#a-end-date').value = '';
+      $('#a-deposit').value = '';
+      $('#a-rent').value = '';
+      $('#a-rentfee').value = '관리비별도';
+      $('#a-area-type').value = '';
+      $('#a-area-size').value = '';
+      $('#a-lessor-name').value = '';
+      $('#a-lessor-phone').value = '';
+      $('#a-bank').value = '';
+      $('#a-account-no').value = '';
+      $('#a-address').value = '';
+      $('#a-lessee-change').value = '';
+      $('#a-remarks').value = '';
+      $('#a-status').value = 'active';
+
+      updateAddModalComputedFields();
+    }
+
+    function openAddModal() {
+      if (state.role !== 'manager') {
+        alert('신규 계약 등록 권한이 없습니다. 관리자 계정으로 로그인해 주세요.');
+        return;
+      }
+      fillFilters();
+      clearAddForm();
+      $('#add-modal').classList.remove('hidden');
+    }
+
+    function saveNewHousing() {
+      const manager = $('#a-manager').value.trim();
+      const dept = $('#a-dept').value.trim();
+      const address = $('#a-address').value.trim();
+      
+      if (!manager) return alert('담당자(사용자) 성명을 입력해주세요.');
+      if (!address) return alert('사택 주소지를 입력해주세요.');
+
+      const row = {
+        id: nextRowId(),
+        manager,
+        dept,
+        startDate: $('#a-start-date').value || '',
+        endDate: $('#a-end-date').value || '',
+        expectedEndDate: $('#a-expected-end-date').value || '',
+        rent: num($('#a-rent').value),
+        deposit: num($('#a-deposit').value),
+        rentFee: $('#a-rentfee').value.trim(),
+        areaType: $('#a-area-type').value.trim(),
+        areaSize: $('#a-area-size').value.trim(),
+        lessorName: $('#a-lessor-name').value.trim(),
+        lessorPhone: $('#a-lessor-phone').value.trim(),
+        bank: $('#a-bank').value.trim(),
+        accountNo: $('#a-account-no').value.trim(),
+        address,
+        lesseeChange: $('#a-lessee-change').value.trim(),
+        remarks: $('#a-remarks').value.trim(),
+        status: $('#a-status').value || 'active'
+      };
+
+      state.data.push(row);
+      addLog('신규 사택등록', row.id, targetName(row), '-', `신규 등록됨 / 보증금·월세: ${money(row.deposit)}/${money(row.rent)}`, row.remarks || '');
+      
+      closeModals();
+      resetFilters();
+      renderAll();
+      alert('신규 사택 임차계약이 추가되었습니다.\n최종 파일에 저장하려면 [현황 저장]을 반드시 눌러주세요.');
+    }
+
+    // ============================== 저장 및 다운로드 기능 (Excel 생성 내장 오프라인 엔진) ==============================
+    function colName(n) {
+      let s = ''; n++;
+      while (n > 0) {
+        const m = (n-1) % 26;
+        s = String.fromCharCode(65 + m) + s;
+        n = Math.floor((n-1)/26);
+      }
+      return s;
+    }
+
+    function cellRef(r, c) {
+      return colName(c) + String(r + 1);
+    }
+
+ function xmlEscape(v) {
+  return String(v ?? '').replace(/[&<>"]/g, m => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;'
+  }[m]));
+}
+
+    function isBlank(v) {
+      return v === null || v === undefined || String(v) === '';
+    }
+
+    function isNumericValue(v) {
+      return typeof v === 'number' || (typeof v === 'string' && v.trim() !== '' && /^-?\d+(\.\d+)?$/.test(v.trim().replace(/,/g, '')));
+    }
+
+    // CRC32 zip helper
+    const CRC_TABLE = (() => {
+      const t = [];
+      for (let n = 0; n < 256; n++) {
+        let c = n;
+        for (let k = 0; k < 8; k++) c = ((c&1) ? (0xEDB88320^(c>>>1)) : (c>>>1));
+        t[n] = c >>> 0;
+      }
+      return t;
+    })();
+
+    function crc32(bytes) {
+      let c = 0 ^ -1;
+      for (let i = 0; i < bytes.length; i++) c = (c>>>8) ^ CRC_TABLE[(c ^ bytes[i]) & 0xFF];
+      return (c ^ -1) >>> 0;
+    }
+
+    function u16(n) { return [n&255, (n>>>8)&255]; }
+    function u32(n) { return [n&255, (n>>>8)&255, (n>>>16)&255, (n>>>24)&255]; }
+
+    function dosDateTime(date = new Date()) {
+      const time = (date.getHours()<<11) | (date.getMinutes()<<5) | Math.floor(date.getSeconds()/2);
+      const d = ((date.getFullYear()-1980)<<9) | ((date.getMonth()+1)<<5) | date.getDate();
+      return {time, date: d};
+    }
+
+    function concatBytes(parts) {
+      const len = parts.reduce((a, p) => a + p.length, 0);
+      const out = new Uint8Array(len);
+      let o = 0;
+      for (const p of parts) { out.set(p, o); o += p.length; }
+      return out;
+    }
+
+    function createZip(files) {
+      const enc = new TextEncoder();
+      const locals = []; const centrals = []; let offset = 0;
+      const dt = dosDateTime();
+
+      files.forEach(f => {
+        const nameBytes = enc.encode(f.name);
+        const data = enc.encode(f.content);
+        const crc = crc32(data);
+
+        const local = new Uint8Array([
+          ...u32(0x04034b50), ...u16(20), ...u16(0), ...u16(0), ...u16(dt.time), ...u16(dt.date),
+          ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(nameBytes.length), ...u16(0)
+        ]);
+        locals.push(local, nameBytes, data);
+
+        const central = new Uint8Array([
+          ...u32(0x02014b50), ...u16(20), ...u16(20), ...u16(0), ...u16(0), ...u16(dt.time), ...u16(dt.date),
+          ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(nameBytes.length), ...u16(0), ...u16(0),
+          ...u16(0), ...u16(0), ...u32(0), ...u32(offset)
+        ]);
+        centrals.push(central, nameBytes);
+
+        offset += local.length + nameBytes.length + data.length;
+      });
+
+      const centralStart = offset;
+      const centralBytes = concatBytes(centrals);
+      const end = new Uint8Array([
+        ...u32(0x06054b50), ...u16(0), ...u16(0), ...u16(files.length), ...u16(files.length),
+        ...u32(centralBytes.length), ...u32(centralStart), ...u16(0)
+      ]);
+
+      return concatBytes([...locals, centralBytes, end]);
+    }
+
+    function downloadXlsx(filename, files) {
+      const zipBytes = createZip(files);
+      const blob = new Blob([zipBytes], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    function buildSheetXml(rows, options = {}) {
+      const colCount = Math.max(1, ...rows.map(r => r.length));
+      const rowCount = Math.max(1, rows.length);
+      const widths = options.cols || Array.from({length: colCount}, () => ({wch: 16}));
+      const priceCols = options.priceColumns || [];
+      const ref = `A1:${cellRef(rowCount-1, colCount-1)}`;
+      
+      const colsXml = '<cols>' + widths.map((w, i) => `<col min="${i+1}" max="${i+1}" width="${w.wch || 16}" customWidth="1"/>`).join('') + '</cols>';
+      
+      const rowsXml = rows.map((row, rIdx) => {
+        const h = rIdx === 0 ? 26 : 60;
+        const cells = [];
+
+        for (let c = 0; c < colCount; c++) {
+          const v = row[c] ?? '';
+          const addr = cellRef(rIdx, c);
+
+          if (rIdx === 0) {
+            cells.push(`<c r="${addr}" s="1" t="inlineStr"><is><t>${xmlEscape(v)}</t></is></c>`);
+          } else if (priceCols.includes(c) && !isBlank(v) && isNumericValue(v)) {
+            cells.push(`<c r="${addr}" s="${rIdx%2 === 1 ? 4 : 5}"><v>${num(v)}</v></c>`);
+          } else {
+            const style = rIdx%2 === 1 ? 2 : 3;
+            cells.push(`<c r="${addr}" s="${style}" t="inlineStr"><is><t xml:space="preserve">${xmlEscape(v)}</t></is></c>`);
+          }
+        }
+        return `<row r="${rIdx+1}" ht="${h}" customHeight="1">${cells.join('')}</row>`;
+      }).join('');
+
+      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>
+  ${colsXml}
+  <sheetData>${rowsXml}</sheetData>
+  <autoFilter ref="${ref}"/>
+  <pageMargins left="0.7" right="0.7" top="0.75" bottom="0.75" header="0.3" footer="0.3"/>
+</worksheet>`;
+    }
+
+    function stylesXml() {
+      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <numFmts count="1"><numFmt numFmtId="164" formatCode="#,##0"/></numFmts>
+  <fonts count="2">
+    <font><sz val="10"/><color rgb="FF000000"/><name val="맑은 고딕"/></font>
+    <font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="맑은 고딕"/></font>
+  </fonts>
+  <fills count="5">
+    <fill><patternFill patternType="none"/></fill>
+    <fill><patternFill patternType="gray125"/></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FF1E40AF"/><bgColor indexed="64"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFFFFFFF"/><bgColor indexed="64"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFEFF6FF"/><bgColor indexed="64"/></patternFill></fill>
+  </fills>
+  <borders count="2">
+    <border><left/><right/><top/><bottom/><diagonal/></border>
+    <border><left style="thin"><color rgb="FFBFAFCF"/></left><right style="thin"><color rgb="FFBFAFCF"/></right><top style="thin"><color rgb="FFBFAFCF"/></top><bottom style="thin"><color rgb="FFBFAFCF"/></bottom><diagonal/></border>
+  </borders>
+  <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+  <cellXfs count="6">
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+    <xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+    <xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>
+    <xf numFmtId="0" fontId="0" fillId="3" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>
+    <xf numFmtId="164" fontId="0" fillId="4" borderId="1" xfId="0" applyNumberFormat="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="top" wrapText="1"/></xf>
+    <xf numFmtId="164" fontId="0" fillId="3" borderId="1" xfId="0" applyNumberFormat="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="top" wrapText="1"/></xf>
+  </cellXfs>
+  <cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
+</styleSheet>`;
+    }
+
+    function contentTypesXml(sheetCount) {
+      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+  <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+  <Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>
+  <Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/>
+  ${Array.from({length: sheetCount}, (_, i) => `<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}
+</Types>`;
+    }
+
+    function workbookXml(sheets) {
+      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheets>${sheets.map((s, i) => `<sheet name="${xmlEscape(s.name).slice(0, 31)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets>
+</workbook>`;
+    }
+
+    function workbookRelsXml(sheetCount) {
+      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  ${Array.from({length: sheetCount}, (_, i) => `<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')}
+  <Relationship Id="rId${sheetCount+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>`;
+    }
+
+    function rootRelsXml() {
+      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>
+  <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/>
+</Relationships>`;
+    }
+
+    function coreXml() {
+      const d = new Date().toISOString();
+      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:creator>Company Housing Dashboard</dc:creator><cp:lastModifiedBy>${xmlEscape(state.user || 'System')}</cp:lastModifiedBy><dcterms:created xsi:type="dcterms:W3CDTF">${d}</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">${d}</dcterms:modified></cp:coreProperties>`;
+    }
+
+    function appXml() {
+      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><Application>Company Housing Dashboard</Application></Properties>`;
+    }
+
+    function saveWorkbookOffline(filename, sheets) {
+      const files = [
+        {name: '[Content_Types].xml', content: contentTypesXml(sheets.length)},
+        {name: '_rels/.rels', content: rootRelsXml()},
+        {name: 'docProps/core.xml', content: coreXml()},
+        {name: 'docProps/app.xml', content: appXml()},
+        {name: 'xl/workbook.xml', content: workbookXml(sheets)},
+        {name: 'xl/_rels/workbook.xml.rels', content: workbookRelsXml(sheets.length)},
+        {name: 'xl/styles.xml', content: stylesXml()},
+        ...sheets.map((s, i) => ({name: `xl/worksheets/sheet${i+1}.xml`, content: buildSheetXml(s.rows, s.options || {})}))
+      ];
+      downloadXlsx(filename, files);
+    }
+
+    // ============================== 저장용 데이터 구축 구조 ==============================
+    function buildHousingRows() {
+      const header = ['담당자', '담당부서', '계약시작일자', '계약종료일자', '예상종료일자', '지역', '월세/보증금(원)', '주소지', '면적(평)', '임대인 정보', '계좌번호', '임차인 변경이력', '비고', '월세+관리비', '임차상태', '한도기준부합여부'];
+      return [
+        header,
+        ...state.data.map(r => {
+          const region = getRegionFromAddress(r.address);
+          const expectedEnd = r.expectedEndDate || calculateExpectedEndDate(r.startDate, r.endDate, r.status);
+          const compliance = checkLimitCompliance(region, r.deposit, r.rent);
+          return [
+            r.manager,
+            r.dept,
+            r.startDate,
+            r.endDate,
+            expectedEnd,
+            region,
+            `${money(r.rent)}/${money(r.deposit)}`,
+            r.address,
+            `${r.areaType} / ${r.areaSize}`,
+            `${r.lessorName}/${r.lessorPhone}`,
+            `${r.bank}/${r.accountNo}`,
+            r.lesseeChange,
+            r.remarks,
+            r.rentFee,
+            statusLabel(r.status),
+            compliance.status
+          ];
+        })
+      ];
+    }
+
+    function buildLogRows() {
+      const header = ['시간', '사용자', '권한', '작업', '대상ID', '대상 사택', '변경 전', '변경 후', '사유'];
+      return [
+        header,
+        ...state.logs.map(l => [
+          l.time,
+          l.user,
+          l.role === 'manager' ? '관리자' : '일반',
+          l.action,
+          l.rowId,
+          l.target,
+          l.before,
+          l.after,
+          l.reason
+        ])
+      ];
+    }
+
+    function buildSummaryRows() {
+      const activeContracts = state.data.filter(r => r.status !== 'terminated');
+      const totalDeposit = state.data.reduce((a, r) => a + num(r.deposit), 0);
+      const totalRent = state.data.reduce((a, r) => a + num(r.rent), 0);
+      
+      const typeSummary = {};
+      state.data.forEach(r => {
+        const k = r.areaType || '미지정';
+        typeSummary[k] = (typeSummary[k] || 0) + 1;
+      });
+
+      return [
+        ['통계 지표', '값'],
+        ['전체 관리 건수', state.data.length],
+        ['유효 임차 건수(미반납)', activeContracts.length],
+        ['총 보증금 합계', totalDeposit],
+        ['총 월세 합계', totalRent],
+        ['변경 로그 기록 수', state.logs.length],
+        ['출처 엑셀 파일명', state.sourceFile || '신규 작성'],
+        ['저장 일시', nowText()],
+        [],
+        ['사택 형태별 건수', '수량'],
+        ...Object.entries(typeSummary)
+      ];
+    }
+
+    function exportDeliveryXlsx() {
+      const fileName = state.originalFileName || state.sourceFile || '사택임차계약현황.xlsx';
+      
+      const ok = confirm(
+        `${fileName} 파일을 저장 및 다운로드합니다.
+        
+` +
+        `작성/편집된 사택 임차계약 데이터와 전체 변경 이력 및 통계 요약이 포함된 엑셀 파일이 생성됩니다.
+` +
+        `이후 기존 원본 파일에 덮어쓰기 방식으로 저장해주시면 됩니다.
+        
+` +
+        `계속 진행하시겠습니까?`
+      );
+
+      if (!ok) return;
+
+      saveWorkbookOffline(fileName, [
+        {
+          name: 'Housing_Lease_Status',
+          rows: buildHousingRows(),
+          options: {cols: [
+            {wch: 12}, {wch: 18}, {wch: 14}, {wch: 14}, {wch: 14}, {wch: 10}, 
+            {wch: 22}, {wch: 44}, {wch: 20}, {wch: 24}, {wch: 28}, {wch: 32}, 
+            {wch: 32}, {wch: 16}, {wch: 12}, {wch: 16}
+          ]}
+        },
+        {
+          name: 'Change_Log',
+          rows: buildLogRows(),
+          options: {cols: [
+            {wch: 22}, {wch: 16}, {wch: 12}, {wch: 18}, {wch: 10}, {wch: 44}, {wch: 30}, {wch: 30}, {wch: 34}
+          ]}
+        },
+        {
+          name: 'Summary',
+          rows: buildSummaryRows(),
+          options: {cols: [{wch: 24}, {wch: 30}]}
+        }
+      ]);
+    }
+
+    function exportLogXlsx() {
+      const ok = confirm(
+        `변경 이력 로그 엑셀 파일을 다운로드합니다.
+        
+` +
+        `그동안 수정/등록/삭제된 이력만 별도 파일로 추출됩니다.
+        
+` +
+        `진행할까요?`
+      );
+
+      if (!ok) return;
+      saveWorkbookOffline(`housing_change_log_${nowText().slice(0, 10).replace(/-/g, '')}.xlsx`, [{
+        name: 'Change_Log',
+        rows: buildLogRows(),
+        options: {cols: [
+          {wch: 22}, {wch: 16}, {wch: 12}, {wch: 18}, {wch: 10}, {wch: 44}, {wch: 30}, {wch: 30}, {wch: 34}
+        ]}
+      }]);
+    }
+
+    function deleteCurrentDetail() {
+      if (state.role !== 'manager') {
+        alert('삭제 권한이 없습니다.');
+        return;
+      }
+      const r = state.data.find(x => x.id === currentDetailId);
+      if (!r) return alert('삭제할 계약을 선택해주세요.');
+
+      if (!confirm(`담당자: ${r.manager}\n주소지: ${r.address}\n\n위 사택 계약을 목록에서 완전히 삭제할까요?\n최종 반영을 위해서는 [현황 저장]을 꼭 눌러야 합니다.`)) return;
+
+      const reason = prompt('삭제 사유를 간략히 기술해주세요. (선택)', '') || '대시보드 관리자에 의한 삭제';
+      addLog('사택 정보 삭제', r.id, targetName(r), `보증금/월세: ${money(r.deposit)}/${money(r.rent)}`, '목록에서 완전 삭제됨', reason);
+
+      state.data = state.data.filter(x => x.id !== r.id).map((x, i) => ({...x, id: i+1}));
+      closeDetailSidebar();
+      renderAll();
+    }
+
+    // ============================== 개별 계약 정보 문자요약 복사기능 ==============================
+    function buildCopySummaryMessage(r) {
+      const region = getRegionFromAddress(r.address);
+      const expectedEnd = r.expectedEndDate || calculateExpectedEndDate(r.startDate, r.endDate, r.status);
+      const compliance = checkLimitCompliance(region, r.deposit, r.rent);
+      const implicitText = r.status === 'implicit' ? ' (묵시적 갱신 적용)' : '';
+
+      return `[FITI시험연구원 사택임차 지원현황 요약]
+
+- 임차사용자(부서): ${r.manager || '-'} (${r.dept || '-'})
+- 지역 분류: ${region}
+- 임차기간: ${r.startDate || '-'} ~ ${r.endDate || '-'}${implicitText}
+- 예상종료일자: ${expectedEnd || '-'}
+- 보증금 / 월세: 보증금 ${money(r.deposit)}원 / 월세 ${money(r.rent)}원
+- 사택 지원 한도 기준: 보증금 ${money(compliance.limit.deposit)}원 / 월세 ${money(compliance.limit.rent)}원 (${compliance.status})
+- 관리비 여부: ${r.rentFee || '확인불가'}
+- 사택소재지: ${r.address || '-'}
+- 사택형태/면적: ${r.areaType || '-'} / ${r.areaSize || '-'}
+- 임대인 연락처: ${r.lessorName || '-'} / ${r.lessorPhone || '-'}
+- 임대료 계좌번호: ${r.bank || '-'} ${r.accountNo || '-'}
+- 비고/인계내용: ${r.remarks || '-'}
+
+이상 확인바랍니다.`;
+    }
+
+    function openShareModal() {
+      const r = state.data.find(x => x.id === currentDetailId);
+      if (!r) return;
+
+      $('#share-target-info').innerHTML = `
+        <b>사택사용자: ${escapeHtml(r.manager)} (${escapeHtml(r.dept)})</b><br>
+        소재지: ${escapeHtml(r.address)}<br>
+        보증금/월세: ${money(r.deposit)}원 / ${money(r.rent)}원
+      `;
+      $('#share-message-text').value = buildCopySummaryMessage(r);
+      $('#share-modal').classList.remove('hidden');
+    }
+
+    function closeShareModal() {
+      $('#share-modal').classList.add('hidden');
+    }
+
+    async function copyShareMessage() {
+      const msg = $('#share-message-text').value.trim();
+      if (!msg) return;
+
+      try {
+        await navigator.clipboard.writeText(msg);
+        alert('요약 내용이 클립보드에 복사되었습니다.\n메신저나 메일에 붙여넣어 전달할 수 있습니다.');
+        closeShareModal();
+      } catch (err) {
+        alert('브라우저 보안으로 인해 자동 복사가 차단되었습니다. 텍스트 박스를 직접 드래그하여 복사해주세요.');
+      }
+    }
+
+    // ============================== 이벤트 리스너 바인딩 ==============================
+
+    $('#clear-session').addEventListener('click', () => {
+      if (!confirm('현재 화면의 사택 데이터와 모든 변경 로그 이력을 초기화할까요?')) return;
+      state.data = [];
+      state.logs = [];
+      state.sourceFile = '';
+      state.originalFileName = '';
+      resetFilters();
+      renderAll();
+    });
+
+    $('#clear-data').addEventListener('click', () => {
+      if (!confirm('현재 화면의 사택 현황 데이터만 비우시겠습니까? 변경 이력 로그는 유지됩니다.')) return;
+      state.data = [];
+      state.sourceFile = '';
+      state.originalFileName = '';
+      resetFilters();
+      renderAll();
+    });
+
+    $('#load-file').addEventListener('click', async () => {
+      const file = $('#data-file').files[0];
+      if (!file) return alert('불러올 사택 엑셀 또는 CSV 파일을 선택하세요.');
+
+      try {
+        const nextData = await readUploadedFile(file);
+        const previousData = state.data.map(r => ({...r}));
+        const deletedCount = previousData.length
+          ? detectDeletedRowsOnReload(previousData, nextData, file.name)
+          : 0;
+
+        state.data = [];
+        state.data = nextData.map((r, i) => ({...r, id: i + 1}));
+        state.sourceFile = file.name;
+        state.originalFileName = file.name;
+
+        resetFilters();
+        renderAll();
+
+        const delMsg = deletedCount > 0 
+          ? `\n\n기존 대비 원본에서 제외된 ${deletedCount}건은 이력 로그에 '삭제됨 / 원본 삭제 감지'로 추적 및 기록해두었습니다.`
+          : '';
+
+        alert(
+          `${file.name}\n` +
+          `총 ${state.data.length}건의 사택 임차 계약을 불러왔습니다.` +
+          delMsg
+        );
+      } catch (err) {
+        alert(err.message || '엑셀 파일을 해석하는 중 오류가 생겼습니다.');
+        console.error(err);
+      }
+    });
+
+    // Filtering inputs binding
+    ['#q', '#filter-dept', '#filter-region', '#filter-type', '#filter-status', '#filter-expiry', '#filter-rentfee', '#sort-key', '#sort-order'].forEach(s => {
+      $(s)?.addEventListener('input', () => renderAll(false));
+    });
+
+    // Real-time computed fields update event listeners
+    ['#d-address', '#d-deposit', '#d-rent', '#d-end-date', '#d-status'].forEach(sel => {
+      $(sel)?.addEventListener('input', updateSidebarComputedFields);
+      $(sel)?.addEventListener('change', updateSidebarComputedFields);
+    });
+
+    ['#a-address', '#a-deposit', '#a-rent', '#a-end-date', '#a-status'].forEach(sel => {
+      $(sel)?.addEventListener('input', updateAddModalComputedFields);
+      $(sel)?.addEventListener('change', updateAddModalComputedFields);
+    });
+
+    $('#exclude-terminated')?.addEventListener('change', () => renderAll(false));
+    $('#hide-delete-logs')?.addEventListener('change', () => renderLogs());
+
+    $('#clear-filter').addEventListener('click', () => {
+      resetFilters();
+      renderAll(false);
+    });
+
+    $('#export-data').addEventListener('click', exportDeliveryXlsx);
+    $('#export-log').addEventListener('click', exportLogXlsx);
+    
+    $('#add-housing').addEventListener('click', openAddModal);
+    $('#save-new-housing').addEventListener('click', saveNewHousing);
+    
+    $('#close-detail-sidebar').addEventListener('click', closeDetailSidebar);
+    $('#delete-detail').addEventListener('click', deleteCurrentDetail);
+
+    // Share Modal triggers
+    $('#copy-summary').addEventListener('click', openShareModal);
+    $$('.close-share-modal').forEach(b => b.addEventListener('click', closeShareModal));
+    $('#copy-share-message').addEventListener('click', copyShareMessage);
+
+    $$('.close-modal').forEach(b => b.addEventListener('click', closeModals));
+
+    // Detail Sidebar Save Action
+    // 사택 지원 지침 팝업
+    $('#open-guide').addEventListener('click', () => {
+      $('#guide-modal').classList.remove('hidden');
+    });
+    $('#guide-modal').addEventListener('click', e => {
+      if (e.target.id === 'guide-modal') closeModals();
+    });
+    $$('.guide-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const view = tab.dataset.guideView;
+        $$('.guide-tab').forEach(t => t.classList.toggle('active', t === tab));
+        $$('.guide-view').forEach(v => v.classList.toggle('active', v.dataset.guidePanel === view));
+      });
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && !$('#guide-modal').classList.contains('hidden')) closeModals();
+    });
+
+    // 개인정보 가림 / 표시 전환
+    $('#toggle-mask').addEventListener('click', () => {
+      if (!maskOn) {
+        maskOn = true;
+      } else {
+        if (!confirm('담당자명 · 주소지 등 개인정보를 화면에 그대로 표시합니다.\n\n주변에 화면이 노출되지 않는지 확인해 주세요.\n계속할까요?')) return;
+        maskOn = false;
+      }
+
+      $('#toggle-mask').textContent = maskOn ? '🔒 개인정보 가림' : '🔓 개인정보 표시중';
+      $('#toggle-mask').classList.toggle('ghost', maskOn);
+
+      renderAll(false);
+      if (currentDetailId != null) openDetail(currentDetailId);
+    });
+
+    $('#save-detail').addEventListener('click', () => {
+      if (state.role !== 'manager') return;
+      const r = state.data.find(x => x.id === currentDetailId);
+      if (!r) return;
+
+      const reason = $('#d-reason-change').value.trim();
+
+      // Collect before values
+      const beforeTarget = targetName(r);
+      const beforeManager = r.manager;
+      const beforeDept = r.dept;
+      const beforeStart = r.startDate;
+      const beforeEnd = r.endDate;
+      const beforeDeposit = num(r.deposit);
+      const beforeRent = num(r.rent);
+      const beforeRentFee = r.rentFee;
+      const beforeAddress = r.address;
+      const beforeAreaType = r.areaType;
+      const beforeAreaSize = r.areaSize;
+      const beforeLessorName = r.lessorName;
+      const beforeLessorPhone = r.lessorPhone;
+      const beforeBank = r.bank;
+      const beforeAccountNo = r.accountNo;
+      const beforeLesseeChange = r.lesseeChange;
+      const beforeRemarks = r.remarks;
+      const beforeStatus = r.status;
+      const beforeExpectedEnd = r.expectedEndDate || '';
+
+      // Collect inputs
+      const afterManager = maskOn ? ($('#d-manager').dataset.real || '') : $('#d-manager').value.trim();
+      const afterDept = $('#d-dept').value.trim();
+      const afterStart = $('#d-start-date').value.trim();
+      const afterEnd = $('#d-end-date').value.trim();
+      const afterDeposit = num($('#d-deposit').value);
+      const afterRent = num($('#d-rent').value);
+      const afterRentFee = $('#d-rentfee').value.trim();
+      const afterAddress = maskOn ? ($('#d-address').dataset.real || '') : $('#d-address').value.trim();
+      const afterAreaType = $('#d-area-type').value.trim();
+      const afterAreaSize = $('#d-area-size').value.trim();
+      const afterLessorName = $('#d-lessor-name').value.trim();
+      const afterLessorPhone = $('#d-lessor-phone').value.trim();
+      const afterBank = $('#d-bank').value.trim();
+      const afterAccountNo = $('#d-account-no').value.trim();
+      const afterLesseeChange = $('#d-lessee-change').value.trim();
+      const afterRemarks = $('#d-remarks').value.trim();
+      const afterStatus = $('#d-status').value;
+      const afterExpectedEnd = $('#d-expected-end-date').value.trim();
+
+      if (!afterManager) return alert('담당자 성명은 필수입니다.');
+      if (!afterAddress) return alert('소재 주소지는 필수입니다.');
+
+      // Add audit logs for changes
+      if (beforeManager !== afterManager) addLog('담당자 수정', r.id, beforeTarget, beforeManager, afterManager, reason);
+      if (beforeDept !== afterDept) addLog('부서 수정', r.id, beforeTarget, beforeDept, afterDept, reason);
+      if (beforeStart !== afterStart) addLog('계약시작일 수정', r.id, beforeTarget, beforeStart, afterStart, reason);
+      if (beforeEnd !== afterEnd) addLog('계약만료일 수정', r.id, beforeTarget, beforeEnd, afterEnd, reason);
+      if (beforeDeposit !== afterDeposit) addLog('보증금 수정', r.id, beforeTarget, money(beforeDeposit), money(afterDeposit), reason);
+      if (beforeRent !== afterRent) addLog('월세 수정', r.id, beforeTarget, money(beforeRent), money(afterRent), reason);
+      if (beforeRentFee !== afterRentFee) addLog('월세+관리비 수정', r.id, beforeTarget, beforeRentFee, afterRentFee, reason);
+      if (beforeAddress !== afterAddress) addLog('주소지 수정', r.id, beforeTarget, beforeAddress, afterAddress, reason);
+      if (beforeAreaType !== afterAreaType) addLog('사택형태 수정', r.id, beforeTarget, beforeAreaType, afterAreaType, reason);
+      if (beforeAreaSize !== afterAreaSize) addLog('면적(크기) 수정', r.id, beforeTarget, beforeAreaSize, afterAreaSize, reason);
+      if (beforeLessorName !== afterLessorName) addLog('임대인명 수정', r.id, beforeTarget, beforeLessorName, afterLessorName, reason);
+      if (beforeLessorPhone !== afterLessorPhone) addLog('임대인연락처 수정', r.id, beforeTarget, beforeLessorPhone, afterLessorPhone, reason);
+      if (beforeBank !== afterBank) addLog('은행 변경', r.id, beforeTarget, beforeBank, afterBank, reason);
+      if (beforeAccountNo !== afterAccountNo) addLog('계좌번호 변경', r.id, beforeTarget, beforeAccountNo, afterAccountNo, reason);
+      if (beforeLesseeChange !== afterLesseeChange) addLog('임차인이력 수정', r.id, beforeTarget, beforeLesseeChange, afterLesseeChange, reason);
+      if (beforeRemarks !== afterRemarks) addLog('비고 수정', r.id, beforeTarget, beforeRemarks, afterRemarks, reason);
+      if (beforeStatus !== afterStatus) addLog('임차상태 상세변경', r.id, beforeTarget, statusLabel(beforeStatus), statusLabel(afterStatus), reason);
+      if (beforeExpectedEnd !== afterExpectedEnd) addLog('예상종료일 수정', r.id, beforeTarget, beforeExpectedEnd || '-', afterExpectedEnd || '-', reason);
+
+      // Apply changes to state
+      r.manager = afterManager;
+      r.dept = afterDept;
+      r.startDate = afterStart;
+      r.endDate = afterEnd;
+      r.deposit = afterDeposit;
+      r.rent = afterRent;
+      r.rentFee = afterRentFee;
+      r.address = afterAddress;
+      r.areaType = afterAreaType;
+      r.areaSize = afterAreaSize;
+      r.lessorName = afterLessorName;
+      r.lessorPhone = afterLessorPhone;
+      r.bank = afterBank;
+      r.accountNo = afterAccountNo;
+      r.lesseeChange = afterLesseeChange;
+      r.remarks = afterRemarks;
+      r.status = afterStatus;
+      r.expectedEndDate = afterExpectedEnd;
+
+      renderAll();
+      openDetail(r.id);
+      alert('사택 임차 계약 내용이 저장되었습니다.\n엑셀 파일에 저장하려면 상단의 [현황 저장]을 꼭 누르십시오.');
+    });
+
+    /* =====================================================================
+       서버 저장 동기화 (Vercel Blob · /api/state)
+       ---------------------------------------------------------------------
+       이 앱은 원래 아무 곳에도 저장하지 않아 새로고침하면 데이터가 사라졌습니다.
+         · 페이지를 열 때 서버에서 계약목록 · 변경이력을 받아 옵니다.
+         · 변경이 생기면 2초 뒤 자동으로 서버에 올립니다.
+       서버가 없거나 실패해도 화면은 기존과 똑같이 동작합니다.
+       ===================================================================== */
+    const HousingSync = (function () {
+      const API = '/api/state';
+      let enabled = false;
+      let timer = null;
+      let pushing = false;
+      let lastSig = '';
+
+      function badge(text, tone) {
+        let el = document.getElementById('housingSyncBadge');
+        if (!el) {
+          el = document.createElement('div');
+          el.id = 'housingSyncBadge';
+          el.style.cssText = 'position:fixed;right:14px;bottom:14px;z-index:9999;'
+            + 'padding:7px 13px;border-radius:999px;font-size:12px;font-weight:800;'
+            + 'box-shadow:0 6px 18px rgba(15,23,42,.18);font-family:inherit';
+          document.body.appendChild(el);
+        }
+        const tones = {
+          ok:   'background:#d1fae5;color:#047857;border:1px solid #6ee7b7',
+          warn: 'background:#fef3c7;color:#92400e;border:1px solid #fcd34d',
+          busy: 'background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd'
+        };
+        el.style.cssText += ';' + (tones[tone] || tones.ok);
+        el.textContent = text;
+      }
+
+      function signature() {
+        return state.data.length + '|' + state.logs.length + '|' + JSON.stringify(state.data).length;
+      }
+
+      function push() {
+        if (!enabled || pushing) return;
+        pushing = true;
+        badge('서버 저장 중…', 'busy');
+
+        fetch(API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            data: state.data,
+            logs: state.logs,
+            sourceFile: state.sourceFile || '',
+            savedBy: state.user || '관리자'
+          })
+        })
+          .then(function (r) { return r.json(); })
+          .then(function (j) {
+            if (j && j.success) {
+              lastSig = signature();
+              badge('서버 저장됨 · ' + (j.savedAt || ''), 'ok');
+            } else {
+              badge('서버 저장 실패', 'warn');
+            }
+          })
+          .catch(function () { badge('서버 저장 실패', 'warn'); })
+          .finally(function () { pushing = false; });
+      }
+
+      // 데이터가 바뀌면 2초 뒤 한 번만 올립니다.
+      function watch() {
+        setInterval(function () {
+          if (!enabled) return;
+          const sig = signature();
+          if (sig === lastSig) return;
+          lastSig = sig;
+          clearTimeout(timer);
+          timer = setTimeout(push, 2000);
+        }, 1500);
+      }
+
+      function boot(done) {
+        fetch(API, { cache: 'no-store' })
+          .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+          .then(function (j) {
+            if (!j || j.success !== true) throw new Error('bad payload');
+            enabled = true;
+
+            if (Array.isArray(j.data) && j.data.length) {
+              state.data = j.data;
+              state.logs = Array.isArray(j.logs) ? j.logs : [];
+              state.sourceFile = j.sourceFile || '';
+              badge('서버 데이터 불러옴 · ' + (j.savedAt || ''), 'ok');
+            } else {
+              badge('서버 저장 사용 가능', 'ok');
+            }
+            lastSig = signature();
+          })
+          .catch(function () {
+            enabled = false;
+            badge('임시 세션 (서버 미연결 · 새로고침 시 사라짐)', 'warn');
+          })
+          .finally(function () {
+            try { done(); } catch (e) { console.error(e); }
+            watch();
+          });
+      }
+
+      return { boot: boot, pushNow: push };
+    })();
+
+    // Default initialization
+    $('#user-label').textContent = `${state.user} 님`;
+    $('#role-label').textContent = state.role === 'manager' ? '관리자 권한' : '일반 사용자';
+
+    HousingSync.boot(function () {
+      renderAll();
+    });
+  </script>
+</body>
+</html>
