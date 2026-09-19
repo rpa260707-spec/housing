@@ -877,6 +877,29 @@
       margin-top: 16px;
     }
     
+    /* 저장 후 엑셀 여부를 묻는 카드 — 가운데, 한눈에 */
+    .ask-modal__box {
+      width: min(460px, 92vw);
+      text-align: center;
+      padding: 30px 26px 24px;
+    }
+    .ask-modal__icon { font-size: 34px; line-height: 1; margin-bottom: 12px; }
+    .ask-modal__title { font-size: 17px; font-weight: 800; margin: 0 0 6px; }
+    .ask-modal__sub { font-size: 12.5px; color: var(--muted, #64748b); margin: 0 0 18px; line-height: 1.6; }
+    .ask-modal__q {
+      display: block; padding: 16px 14px; border-radius: 14px;
+      background: var(--soft, #f1f5f9); margin-bottom: 20px;
+    }
+    .ask-modal__q b { display: block; font-size: 14.5px; margin-bottom: 6px; }
+    .ask-modal__file {
+      display: block; font-size: 12px; font-weight: 700; color: var(--brand, #2563eb);
+      word-break: break-all; margin-bottom: 8px;
+    }
+    .ask-modal__desc { display: block; font-size: 11.5px; color: var(--muted, #64748b); line-height: 1.6; }
+    .ask-modal__actions { display: flex; gap: 10px; }
+    .ask-modal__actions .btn { flex: 1; justify-content: center; padding: 12px 14px; font-size: 13.5px; }
+    .ask-modal__foot { font-size: 11.5px; color: var(--muted, #64748b); margin: 14px 0 0; }
+
     /* Copy Modal Specific styles */
     .share-modal .modal {
       width: min(760px, 94vw);
@@ -1241,6 +1264,24 @@
   </section>
 
   <!-- Add New Entry Modal -->
+  <!-- 저장 후 엑셀 받을지 묻는 창 — 브라우저 기본 confirm 대신 가운데 카드로 -->
+  <div id="ask-modal" class="modal-bg hidden">
+    <div class="modal ask-modal__box">
+      <div class="ask-modal__icon">✅</div>
+      <h3 class="ask-modal__title">서버 저장은 자동으로 됩니다</h3>
+      <p class="ask-modal__sub">수정할 때마다 자동 저장됩니다. 화면 우측 아래에서 상태를 볼 수 있습니다.</p>
+      <div class="ask-modal__q">
+        <b>엑셀 파일도 내려받으시겠습니까?</b>
+        <span id="ask-modal-file" class="ask-modal__file"></span>
+        <span class="ask-modal__desc">임차계약 데이터 + 변경 이력 + 통계 요약이 들어갑니다. 받은 뒤 기존 원본 파일에 덮어쓰면 됩니다.</span>
+      </div>
+      <div class="ask-modal__actions">
+        <button type="button" class="btn ghost" id="ask-modal-no">다운로드 안 함</button>
+        <button type="button" class="btn primary" id="ask-modal-yes">엑셀 다운로드</button>
+      </div>
+      <p class="ask-modal__foot">다운로드를 안 해도 <b>서버에 저장된 내용은 그대로 유지</b>됩니다.</p>
+    </div>
+  </div>
   <div id="add-modal" class="modal-bg hidden">
     <div class="modal">
       <div class="modal-head">
@@ -2939,23 +2980,38 @@
       ];
     }
 
-    function exportDeliveryXlsx() {
+    // 브라우저 기본 confirm 은 글이 잘리고 도메인이 먼저 보여서, 가운데 카드로 묻습니다.
+    function askDownload(fileName) {
+      return new Promise(resolve => {
+        const box = $('#ask-modal');
+        $('#ask-modal-file').textContent = fileName;
+        box.classList.remove('hidden');
+
+        const done = (v) => {
+          box.classList.add('hidden');
+          $('#ask-modal-yes').removeEventListener('click', yes);
+          $('#ask-modal-no').removeEventListener('click', no);
+          box.removeEventListener('click', bg);
+          document.removeEventListener('keydown', esc);
+          resolve(v);
+        };
+        const yes = () => done(true);
+        const no  = () => done(false);
+        const bg  = (e) => { if (e.target === box) done(false); };
+        const esc = (e) => { if (e.key === 'Escape') done(false); };
+
+        $('#ask-modal-yes').addEventListener('click', yes);
+        $('#ask-modal-no').addEventListener('click', no);
+        box.addEventListener('click', bg);
+        document.addEventListener('keydown', esc);
+        $('#ask-modal-yes').focus();
+      });
+    }
+
+    async function exportDeliveryXlsx() {
       const fileName = state.originalFileName || state.sourceFile || '사택임차계약현황.xlsx';
-      
-      const ok = confirm(
-        `✅ 서버 저장은 수정할 때마다 자동으로 됩니다. (화면 우측 아래 표시)
 
-` +
-        `엑셀 파일(${fileName})도 내려받으시겠습니까?
-` +
-        `— 임차계약 데이터 + 변경 이력 + 통계 요약이 들어갑니다. 받은 뒤 기존 원본 파일에 덮어쓰면 됩니다.
-
-` +
-        `[확인] 엑셀 다운로드
-` +
-        `[취소] 다운로드만 안 함 — 서버에 저장된 내용은 그대로 유지됩니다`
-      );
-
+      const ok = await askDownload(fileName);
       if (!ok) return;
 
       saveWorkbookOffline(fileName, [
@@ -3313,9 +3369,31 @@
        ===================================================================== */
     const HousingSync = (function () {
       const API = '/api/state';
+      const LS_KEY = 'housing_state_v1';   // 서버가 없을 때 쓰는 이 브라우저 백업
       let enabled = false;
       let timer = null;
       let pushing = false;
+
+      /* 브라우저 백업 — 서버(Blob)가 연결되기 전에도 새로고침하면 그대로 남습니다.
+         구매현황이 쓰는 방식과 같습니다. 서버가 붙으면 서버가 우선입니다. */
+      function saveLocal() {
+        try {
+          localStorage.setItem(LS_KEY, JSON.stringify({
+            data: state.data,
+            logs: state.logs,
+            sourceFile: state.sourceFile || '',
+            savedAt: nowText(),
+            savedBy: state.user || ''
+          }));
+        } catch (e) { /* 용량 초과 등은 무시하고 진행 */ }
+      }
+
+      function readLocal() {
+        try {
+          const j = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
+          return (j && Array.isArray(j.data) && j.data.length) ? j : null;
+        } catch (e) { return null; }
+      }
       let lastSig = '';
 
       function badge(text, tone) {
@@ -3375,10 +3453,14 @@
       // 데이터가 바뀌면 2초 뒤 한 번만 올립니다.
       function watch() {
         setInterval(function () {
-          if (!enabled) return;
           const sig = signature();
           if (sig === lastSig) return;
           lastSig = sig;
+
+          // 서버 연결 여부와 상관없이 이 브라우저에는 항상 백업해 둡니다.
+          saveLocal();
+
+          if (!enabled) return;
           clearTimeout(timer);
           timer = setTimeout(push, 2000);
         }, 1500);
@@ -3401,13 +3483,35 @@
               renderSourceInfo();
               badge('서버 데이터 불러옴 · ' + (j.savedAt || ''), 'ok');
             } else {
-              badge('서버 저장 사용 가능', 'ok');
+              // 서버는 붙었는데 아직 비어 있으면, 이 브라우저 백업을 올려 둡니다.
+              const c = readLocal();
+              if (c) {
+                state.data = c.data;
+                state.logs = Array.isArray(c.logs) ? c.logs : [];
+                state.sourceFile = c.sourceFile || '';
+                renderSourceInfo();
+                badge('이 브라우저 백업 복구됨 · 저장하면 서버로 올라갑니다', 'ok');
+              } else {
+                badge('서버 저장 사용 가능', 'ok');
+              }
             }
             lastSig = signature();
           })
           .catch(function () {
             enabled = false;
-            badge('임시 세션 (서버 미연결 · 새로고침 시 사라짐)', 'warn');
+            // 서버가 없을 때도 이 브라우저 백업이 있으면 되살립니다.
+            const c = readLocal();
+            if (c) {
+              state.data = c.data;
+              state.logs = Array.isArray(c.logs) ? c.logs : [];
+              state.sourceFile = c.sourceFile || '';
+              state.serverSavedAt = c.savedAt || '';
+              state.serverSavedBy = c.savedBy || '';
+              renderSourceInfo();
+              badge('이 브라우저에만 저장됨 (서버 미연결)', 'warn');
+            } else {
+              badge('임시 세션 (서버 미연결 · 엑셀을 불러오세요)', 'warn');
+            }
           })
           .finally(function () {
             try { done(); } catch (e) { console.error(e); }
