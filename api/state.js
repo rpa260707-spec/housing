@@ -1,5 +1,17 @@
 import { put, get } from '@vercel/blob';
 
+/* Vercel 에서 Blob 을 연결할 때 접두사가 붙으면(`housing_STORE_ID` 처럼)
+   기본 이름(BLOB_READ_WRITE_TOKEN)이 없거나 다른 저장소를 가리켜 403 이 납니다.
+   그래서 있는 것 중에 맞는 값을 골라 명시적으로 넘깁니다. */
+const BLOB_OPT = (() => {
+  const token = process.env.housing_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN;
+  const storeId = process.env.housing_STORE_ID || process.env.BLOB_STORE_ID;
+  const o = {};
+  if (token) o.token = token;
+  else if (storeId) o.storeId = storeId;
+  return o;
+})();
+
 // 비거주지 근무직원 사택 임차현황 서버 저장 API (Vercel Blob)
 // 사택 계약 목록(data)과 변경 이력(logs)을 한 파일로 보관합니다.
 
@@ -33,7 +45,7 @@ function emptyPayload() {
 
 async function readPayload() {
   try {
-    const blob = await get(FILE_NAME, { access: 'private' });
+    const blob = await get(FILE_NAME, { access: 'private', ...BLOB_OPT });
     if (!blob || !blob.stream) return emptyPayload();
 
     const text = await streamToText(blob.stream);
@@ -92,7 +104,7 @@ export default async function handler(req, res) {
       await put(
         FILE_NAME,
         JSON.stringify({ data, logs, sourceFile, savedAt, savedBy, saveVersion }),
-        { access: 'private', contentType: 'application/json', allowOverwrite: true }
+        { access: 'private', contentType: 'application/json', allowOverwrite: true, ...BLOB_OPT }
       );
 
       return res.status(200).json({ success: true, count: data.length, savedAt, savedBy, saveVersion });

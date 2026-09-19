@@ -1,5 +1,15 @@
 import { get } from '@vercel/blob';
 
+/* 연결 접두사(housing_)가 붙은 환경변수를 우선 씁니다. state.js 와 같은 이유. */
+const BLOB_OPT = (() => {
+  const token = process.env.housing_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN;
+  const storeId = process.env.housing_STORE_ID || process.env.BLOB_STORE_ID;
+  const o = {};
+  if (token) o.token = token;
+  else if (storeId) o.storeId = storeId;
+  return o;
+})();
+
 // 업무포털 위젯용 "집계 전용" API
 //
 // /api/state 는 담당자명·주소지·임대인 계좌 같은 개인정보를 그대로 담고 있어
@@ -35,7 +45,7 @@ async function streamToText(stream) {
 
 async function readPayload() {
   try {
-    const blob = await get(FILE_NAME, { access: 'private' });
+    const blob = await get(FILE_NAME, { access: 'private', ...BLOB_OPT });
     if (!blob || !blob.stream) return { data: [], savedAt: '' };
 
     const text = await streamToText(blob.stream);
