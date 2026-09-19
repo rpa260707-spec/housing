@@ -1231,6 +1231,12 @@
           </table>
         </div>
       </section>
+  <!-- 공통 꼬리말 — 전 앱 동일 형식 (2026-09-19) -->
+  <footer class="sitefoot" style="margin:26px auto 30px;padding:14px 16px 0;max-width:1400px;border-top:1px solid rgba(148,163,184,.28);display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:11px;color:#8a93a6;line-height:1.6">
+    <span><b style="color:#6b7280">(재)FITI시험연구원</b> 사업지원본부 · 전략구매팀</span>
+    <span style="opacity:.5">·</span><span>비거주지 근무직원 사택 임차현황 v1.0</span>
+    <span style="opacity:.5">·</span><span>문의 : 전략구매팀 (내선 8124)</span>
+  </footer>
     </main>
   </section>
 
@@ -3388,7 +3394,8 @@
             if (Array.isArray(j.data) && j.data.length) {
               state.data = j.data;
               state.logs = Array.isArray(j.logs) ? j.logs : [];
-              state.sourceFile = j.sourceFile || '';
+              // 화환과 같은 표기 — 서버에서 받아온 건 'Vercel 저장소' 로 씁니다.
+              state.sourceFile = j.sourceFile || 'Vercel 저장소';
               state.serverSavedAt = j.savedAt || '';
               state.serverSavedBy = j.savedBy || '';
               renderSourceInfo();
