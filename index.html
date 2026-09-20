@@ -191,7 +191,16 @@
       align-items: center;
       gap: 8px;
     }
-    
+    /* 헤더 공통 형식 (2026-09-20 · 02·03·04·05·06 동일)
+       제목 한 줄 + 그 아래 흐린 소속 한 줄. 포털 헤더와 같은 짜임입니다. */
+    .brand-txt { display:flex; flex-direction:column; line-height:1.2; min-width:0; }
+    .brand-name { font-weight:950; }
+    .brand-sub {
+      font-size:11px; font-weight:600; color:#8a93a6;
+      letter-spacing:.01em; margin-top:3px; white-space:nowrap;
+    }
+    @media (max-width:640px){ .brand-sub{ display:none; } }
+
     .user {
       display: flex;
       gap: 10px;
@@ -1091,7 +1100,12 @@
   <!-- Main App Screen -->
   <section id="app" class="app">
     <nav class="nav">
-      <div class="brand">🏠 비거주지 근무직원 사택 임차현황</div>
+      <div class="brand">
+        <span class="brand-txt">
+          <span class="brand-name">비거주지 근무직원 사택 임차현황</span>
+          <span class="brand-sub">사업지원본부 · 전략구매팀 · v1.1</span>
+        </span>
+      </div>
       <div class="user">
         <a class="btn ghost small" href="https://fiti-procurement-portal.vercel.app/" title="전략구매팀 업무포털로 이동">← 업무포털</a>
         <span id="user-label"></span>

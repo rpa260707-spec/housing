@@ -116,12 +116,22 @@ function shiftDays(ymd, days) {
   return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())}`;
 }
 
-// 지역 판정 — index.html 의 getRegionFromAddress 와 같은 규칙입니다.
-// 주소 원문은 내보내지 않고 '서울 / 청주 / 그 밖의 지역' 건수만 셉니다.
+// 권역 판정 — 「비거주지 근무직원에 대한 지원금 운영요령」(인사관리 3-2-2) 〈별표1〉 기준입니다.
+// 주소 원문은 내보내지 않고 권역별 건수만 셉니다.
+//
+// 순서가 중요합니다. '경기도 광주시' 가 광주광역시로 잡히면 안 되므로
+// 수도권을 먼저 걸러야 합니다. 충청북도(청주)를 충청남도(대전)보다 먼저 봅니다.
+const REGION_ORDER = ['서울·수도권', '청주', '대전', '대구', '부산', '전주', '광주', '그 밖의 지역'];
+
 function regionGroup(address) {
-  const addr = String(address ?? '').trim();
-  if (addr.includes('서울')) return '서울';
-  if (addr.includes('청주') || addr.includes('오창') || addr.includes('충주')) return '청주';
+  const a = String(address ?? '').trim();
+  if (/서울|인천|경기/.test(a)) return '서울·수도권';                 // 서울/인천/경기도 — 거점 마곡본원
+  if (/청주|오창|충주|충청북도|충북/.test(a)) return '청주';          // 충청북도 — 거점 오창분원
+  if (/대전|세종|충청남도|충남/.test(a)) return '대전';               // 대전/세종/충청남도
+  if (/대구|경상북도|경북/.test(a)) return '대구';                    // 대구/경상북도
+  if (/부산|울산|경상남도|경남/.test(a)) return '부산';               // 부산/울산/경상남도
+  if (/전주|전라북도|전북/.test(a)) return '전주';                    // 전라북도
+  if (/광주|전라남도|전남/.test(a)) return '광주';                    // 광주/전라남도
   return '그 밖의 지역';
 }
 
@@ -177,7 +187,9 @@ export default async function handler(req, res) {
     let nearestEnd = '';    // 가장 가까운 예상종료일
 
     const areaTypes = {};   // 사택 형태별 건수 (원룸/투룸 등 — 개인정보 아님)
-    const regions = { '서울': 0, '청주': 0, '그 밖의 지역': 0 };
+    // 〈별표1〉 권역 전부를 0 으로 깔아 두고 셉니다. 순서를 고정해야 화면에서 뒤바뀌지 않습니다.
+    const regions = {};
+    REGION_ORDER.forEach(k => { regions[k] = 0; });
 
     for (const r of rows) {
       total += 1;
