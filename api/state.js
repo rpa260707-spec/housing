@@ -50,11 +50,13 @@ async function blobTry(run) {
 
 const FILE_NAME = 'housing-state.json';
 
+// 이 엔드포인트는 임차인 성명·주소·연락처·계좌번호를 그대로 담고 있으므로
+// 교차 출처(CORS)를 열지 않습니다. 사택 화면(같은 출처)에서만 부릅니다.
+// 외부에서 볼 집계는 개인정보가 없는 /api/summary 를 쓰세요.
 function setHeaders(res) {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
 }
 
 async function streamToText(stream) {

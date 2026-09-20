@@ -133,6 +133,27 @@ function normalizeDate(value) {
   return `${m[1]}-${p(m[2])}-${p(m[3])}`;
 }
 
+// 만료 판정은 계약만료일이 아니라 **예상종료일** 기준입니다.
+// 묵시적 갱신된 건은 계약만료일이 이미 지났어도 만료로 세면 안 됩니다.
+// index.html 의 calculateExpectedEndDate 와 같은 규칙을 씁니다.
+function expectedEnd(row, today) {
+  const saved = normalizeDate(row?.expectedEndDate);
+  if (saved) return saved;
+
+  const end = normalizeDate(row?.endDate);
+  if (!end) return '';
+
+  const [y, m, d] = end.split('-').map(Number);
+  let targetYear = y;
+
+  if (y === 2026 && end < today) targetYear = 2027;
+  else if (y === 2025) targetYear = 2026;
+  else if (row?.status === 'implicit' && end >= today) targetYear = y + 1;
+
+  const p = (n) => String(n).padStart(2, '0');
+  return `${targetYear}-${p(m)}-${p(d)}`;
+}
+
 export default async function handler(req, res) {
   setHeaders(res);
 
@@ -149,11 +170,11 @@ export default async function handler(req, res) {
 
     let total = 0;          // 전체 관리 건수
     let active = 0;         // 유효 임차(미반납) 건수
-    let expiring90 = 0;     // 90일 이내 계약 종료 예정
-    let expired = 0;        // 이미 종료일이 지난 미반납 건
+    let expiring90 = 0;     // 90일 이내 예상종료 예정
+    let expired = 0;        // 예상종료일도 이미 지난 미반납 건
     let totalDeposit = 0;   // 보증금 합계
     let totalRent = 0;      // 월세 합계
-    let nearestEnd = '';    // 가장 가까운 종료 예정일
+    let nearestEnd = '';    // 가장 가까운 예상종료일
 
     const areaTypes = {};   // 사택 형태별 건수 (원룸/투룸 등 — 개인정보 아님)
     const regions = { '서울': 0, '청주': 0, '그 밖의 지역': 0 };
@@ -173,7 +194,7 @@ export default async function handler(req, res) {
 
       regions[regionGroup(r?.address)] += 1;
 
-      const end = normalizeDate(r?.endDate);
+      const end = expectedEnd(r, today);
       if (!end) continue;
 
       if (end < today) {
@@ -189,7 +210,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       asOf: today,
-      basis: '계약종료일 기준',
+      basis: '예상종료일 기준',
       total,
       active,
       expiring90,
