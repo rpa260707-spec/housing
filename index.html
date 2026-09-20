@@ -407,7 +407,7 @@
     }
     
     .card-value {
-      font-size: 26px;
+      font-size: clamp(17px, 1.45vw, 23px);
       font-weight: 950;
       letter-spacing: -0.04em;
     }
@@ -830,6 +830,64 @@
       .gtable th,.gtable td{padding:7px 8px}
     }
 
+    /* ===== 사택 계약 목록 표 (2026-09-20) =====
+       지역·담당자·날짜가 좁은 칸에서 두 줄로 쪼개져 읽기 어려웠습니다.
+       글씨를 조금 줄이고 짧은 칸은 한 줄로 고정합니다. 긴 칸(부서·주소·비고)만 접힙니다. */
+    .table-area table th,
+    .table-area table td,
+    #tbody td{
+      font-size:12px;
+      padding:9px 10px;
+      vertical-align:middle;
+    }
+    /* 1 No · 2 지역 · 3 담당자 · 5 계약일 · 6 계약만료일 · 7 예상종료일 · 8 월세/보증금 · 10 임차상태 */
+    #tbody td:nth-child(1), #tbody td:nth-child(2), #tbody td:nth-child(3),
+    #tbody td:nth-child(5), #tbody td:nth-child(6), #tbody td:nth-child(7),
+    #tbody td:nth-child(8), #tbody td:nth-child(10),
+    table thead th:nth-child(1), table thead th:nth-child(2), table thead th:nth-child(3),
+    table thead th:nth-child(5), table thead th:nth-child(6), table thead th:nth-child(7),
+    table thead th:nth-child(8), table thead th:nth-child(10){
+      white-space:nowrap;
+    }
+    /* 날짜·금액은 자릿수 정렬 */
+    #tbody td:nth-child(5), #tbody td:nth-child(6),
+    #tbody td:nth-child(7), #tbody td:nth-child(8){
+      font-variant-numeric:tabular-nums;
+      letter-spacing:-.02em;
+    }
+    /* 한도 배지는 금액 아래 줄에 작게 */
+    #tbody td:nth-child(8) .status{
+      font-size:10px;
+      padding:2px 6px;
+      margin-top:3px;
+    }
+
+    /* ===== KPI 카드 정렬 (2026-09-20) =====
+       설명글이 position:absolute · bottom 고정이라 금액이 길어지면 그 위로
+       겹쳐 찍혔습니다 (110,400,000원 ↔ 현황 보증금 합계).
+       카드를 세로 흐름으로 바꾸고 설명글을 맨 아래 칸에 둡니다. */
+    .kpis .card{
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-start;
+      padding-bottom:14px;
+      padding-right:74px;            /* 오른쪽 장식 원과 겹치지 않게 */
+    }
+    .kpis .card .card-value{
+      line-height:1.25;
+      margin-bottom:6px;
+      overflow-wrap:anywhere;
+    }
+    .kpis .card::before{             /* 바닥 고정 → 흐름 배치 */
+      position:static !important;
+      display:block;
+      margin-top:auto;
+      left:auto !important;
+      bottom:auto !important;
+      line-height:1.4;
+    }
+    .kpis .card::after{ top:18px !important; }
+
     /* ===== 필터 줄 정렬 (2026-09-20) =====
        「임차상태」 칸만 아래에 체크박스가 붙어 높이가 달라지는 바람에
        그 칸 전체가 위로 밀려 라벨·셀렉트 줄이 어긋났습니다.
@@ -1087,7 +1145,7 @@
         <div class="panel">
           <h2>월별 계약 만료 예정 건수</h2>
           <div id="expiry-chart"></div>
-          <p class="hint">계약종료일이 도래하는 월 기준 임차 만료 분포입니다.</p>
+          <p class="hint"><b>예상종료일</b> 기준 월별 만료 분포입니다. 묵시적 갱신된 건은 갱신 후 종료일로 집계됩니다.</p>
         </div>
         <div class="panel">
           <h2>사택 지원 기준 및 준수율</h2>
@@ -2355,12 +2413,18 @@
       renderBarChart('#dept-chart', Object.entries(deptCounts).sort((a, b) => b[1] - a[1]).slice(0, 5));
 
       // Expiry Chart
+      // 계약만료일(endDate)이 아니라 **예상종료일**을 기준으로 셉니다.
+      // 묵시적 갱신된 건은 계약만료일이 이미 지나 있어(2024년 등) 만료 예정으로
+      // 보면 안 되고, 갱신 반영된 예상종료일이 실제로 도래할 시점입니다.
       const expiryCounts = {};
       state.data.forEach(r => {
-        if (r.status !== 'terminated' && r.endDate) {
-          const key = monthKey(r.endDate);
-          expiryCounts[key] = (expiryCounts[key] || 0) + 1;
-        }
+        if (r.status === 'terminated') return;
+        const end = r.expectedEndDate
+          || calculateExpectedEndDate(r.startDate, r.endDate, r.status)
+          || r.endDate;
+        if (!end || end === '-') return;
+        const key = monthKey(end);
+        expiryCounts[key] = (expiryCounts[key] || 0) + 1;
       });
       const sortedExpiry = Object.entries(expiryCounts)
         .filter(([k]) => k !== '만료일 미입력')
