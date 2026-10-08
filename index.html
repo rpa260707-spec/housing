@@ -558,6 +558,26 @@
       color: #0f172a;
     }
     
+    /* 진행중 / 완료 탭 — 반납 완료 건을 숨기지 않고 따로 모아 봅니다.
+       예전에는 「반납 완료 제외」 체크박스로 감춰서, 목록에서 No 가 중간중간 비어 보였습니다. */
+    .lease-tabs {
+      display: flex; gap: 6px; margin: 0 0 10px 2px; flex-wrap: wrap;
+    }
+    .lease-tab {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border-radius: 999px; cursor: pointer;
+      border: 1px solid #dbe5f2; background: #fff; color: #475569;
+      font-size: 13px; font-weight: 800; font-family: inherit;
+      transition: background .15s, border-color .15s, color .15s;
+    }
+    .lease-tab:hover { border-color: #93b4f0; color: #1d4ed8; }
+    .lease-tab.on { background: #1d4ed8; border-color: #1d4ed8; color: #fff; }
+    .lease-tab .n {
+      font-size: 12px; font-weight: 900; font-variant-numeric: tabular-nums;
+      padding: 1px 7px; border-radius: 999px; background: #eef2f7; color: #475569;
+    }
+    .lease-tab.on .n { background: rgba(255,255,255,.22); color: #fff; }
+
     .table-wrap {
       background: #fff;
       border: 1.2px solid #d4deec;
@@ -1190,9 +1210,6 @@
           <div>
             <label>임차상태</label>
             <select id="filter-status"><option value="all">전체</option></select>
-            <label class="filter-sub" style="display:inline-flex;align-items:center;gap:4px;font-weight:normal;font-size:11px;cursor:pointer;color:var(--muted);">
-              <input id="exclude-terminated" type="checkbox" checked style="width:12px; height:12px; margin:0; cursor:pointer;"> 반납 완료 제외
-            </label>
           </div>
           <div><label>만료 예정일</label><select id="filter-expiry"><option value="all">전체</option><option value="soon">3개월 이내 만료</option><option value="expired">이미 만료</option></select></div>
           <div><label>월세+관리비</label><select id="filter-rentfee"><option value="all">전체</option></select></div>
@@ -1206,6 +1223,11 @@
       <section class="workspace">
         <!-- Table Area -->
         <div class="table-area">
+          <!-- 진행중 / 완료. 완료(반납 완료)도 숨기지 않고 여기서 봅니다. -->
+          <div class="lease-tabs" id="lease-tabs">
+            <button type="button" class="lease-tab on" data-tab="active">진행중<span class="n" id="tabn-active">0</span></button>
+            <button type="button" class="lease-tab" data-tab="done">완료<span class="n" id="tabn-done">0</span></button>
+          </div>
           <section class="table-wrap">
             <table>
               <thead>
@@ -1831,7 +1853,8 @@
       data: [],
       logs: [],
       sourceFile: '',
-      originalFileName: ''
+      originalFileName: '',
+      tab: 'active'            // 'active' = 진행중 · 'done' = 반납 완료
     };
 
     let currentDetailId = null;
@@ -1992,7 +2015,8 @@
       });
       if ($('#sort-key')) $('#sort-key').value = 'id';
       if ($('#sort-order')) $('#sort-order').value = 'asc';
-      if ($('#exclude-terminated')) $('#exclude-terminated').checked = true;
+      state.tab = 'active';
+      syncLeaseTabs();
     }
 
     // ============================== CSV 백업 파서 ==============================
@@ -2292,6 +2316,19 @@
       return isNaN(d.getTime()) ? 0 : d.getTime();
     }
 
+    /* 탭 버튼 모양·건수 갱신. 건수는 탭과 무관하게 전체에서 셉니다
+       (탭을 옮겨도 반대쪽 숫자가 0 으로 보이면 안 되므로). */
+    function syncLeaseTabs() {
+      const done = state.data.filter(r => r.status === 'terminated').length;
+      const active = state.data.length - done;
+      const a = $('#tabn-active'), d = $('#tabn-done');
+      if (a) a.textContent = active;
+      if (d) d.textContent = done;
+      document.querySelectorAll('#lease-tabs .lease-tab').forEach(b => {
+        b.classList.toggle('on', b.dataset.tab === (state.tab === 'done' ? 'done' : 'active'));
+      });
+    }
+
     function filteredData() {
       const q = $('#q').value.trim().toLowerCase();
       const dept = $('#filter-dept').value;
@@ -2302,7 +2339,7 @@
       const rentfee = $('#filter-rentfee').value;
       const sortKey = $('#sort-key')?.value || 'id';
       const sortOrder = $('#sort-order')?.value === 'desc' ? 'desc' : 'asc';
-      const excludeTerminated = $('#exclude-terminated')?.checked ?? true;
+      const tab = state.tab === 'done' ? 'done' : 'active';
 
       const result = state.data.filter(r => {
         // Text Search
@@ -2319,7 +2356,8 @@
 
         const region = getRegionFromAddress(r.address);
         const matchesRegion = (regionFilter === 'all' || region === regionFilter);
-        const matchesExclude = !excludeTerminated || r.status !== 'terminated';
+        const isDone = (r.status === 'terminated');
+        const matchesTab = (tab === 'done') ? isDone : !isDone;
 
         return (!q || text.includes(q)) &&
           (dept === 'all' || r.dept === dept) &&
@@ -2328,7 +2366,7 @@
           (st === 'all' || r.status === st) &&
           (rentfee === 'all' || r.rentFee === rentfee) &&
           matchesExpiry &&
-          matchesExclude;
+          matchesTab;
       });
 
       // Sort
@@ -2578,6 +2616,7 @@
 
     function renderAll(rebuildFilters = true) {
       if (rebuildFilters) fillFilters();
+      syncLeaseTabs();
       renderSummary();
       renderTable();
       renderLogs();
@@ -2615,9 +2654,15 @@
       $('#detail-sub').textContent = `선택 사택: ${mName(r.manager || '-')}(${r.dept || '-'})`;
 
       // Form bindings
+      /* 가려도 고칠 수는 있어야 합니다. readOnly 로 막아 두면
+         「개인정보 가림」을 끄기 전에는 이름을 바꿀 수 없습니다.
+         가린 채로 고치면 고친 값이 그대로 들어갑니다(저장부의 readMasked 참고). */
       $('#d-manager').value = mName(r.manager || '');
       $('#d-manager').dataset.real = r.manager || '';
-      $('#d-manager').readOnly = maskOn;
+      $('#d-manager').readOnly = false;
+      $('#d-manager').title = maskOn
+        ? '가려진 상태입니다. 그대로 두면 원래 이름이 유지되고, 고쳐 쓰면 그 값으로 바뀝니다.'
+        : '';
       $('#d-dept').value = r.dept || '';
       $('#d-start-date').value = r.startDate || '';
       $('#d-end-date').value = r.endDate || '';
@@ -2626,7 +2671,10 @@
       $('#d-rentfee').value = r.rentFee || '';
       $('#d-address').value = mAddress(r.address || '');
       $('#d-address').dataset.real = r.address || '';
-      $('#d-address').readOnly = maskOn;
+      $('#d-address').readOnly = false;
+      $('#d-address').title = maskOn
+        ? '가려진 상태입니다. 그대로 두면 원래 주소가 유지되고, 고쳐 쓰면 그 값으로 바뀝니다.'
+        : '';
       $('#d-area-type').value = r.areaType || '';
       $('#d-area-size').value = r.areaSize || '';
       
@@ -3306,7 +3354,9 @@
       $(sel)?.addEventListener('change', updateAddModalComputedFields);
     });
 
-    $('#exclude-terminated')?.addEventListener('change', () => renderAll(false));
+    document.querySelectorAll('#lease-tabs .lease-tab').forEach(b => {
+      b.addEventListener('click', () => { state.tab = b.dataset.tab; syncLeaseTabs(); renderAll(false); });
+    });
     $('#hide-delete-logs')?.addEventListener('change', () => renderLogs());
 
     $('#clear-filter').addEventListener('click', () => {
@@ -3394,14 +3444,27 @@
       const beforeExpectedEnd = r.expectedEndDate || '';
 
       // Collect inputs
-      const afterManager = maskOn ? ($('#d-manager').dataset.real || '') : $('#d-manager').value.trim();
+      /* 가려진 칸은 화면에 「홍○동」처럼 나옵니다. 그걸 그대로 저장하면
+         원본 이름이 마스킹된 글자로 덮어써집니다. 그래서 원본을 되돌려 씁니다.
+         다만 **사용자가 실제로 고쳤으면** 고친 값을 써야 합니다 —
+         안 그러면 이름 변경이 조용히 무시됩니다(2026-09-29 신고된 증상).
+         가린 표시와 같으면 = 안 고친 것, 다르면 = 고친 것으로 봅니다. */
+      const readMasked = (sel, maskFn) => {
+        const el = $(sel);
+        const real = el.dataset.real || '';
+        const typed = el.value.trim();
+        if (!maskOn) return typed;
+        return typed === maskFn(real) ? real : typed;
+      };
+
+      const afterManager = readMasked('#d-manager', mName);
       const afterDept = $('#d-dept').value.trim();
       const afterStart = $('#d-start-date').value.trim();
       const afterEnd = $('#d-end-date').value.trim();
       const afterDeposit = num($('#d-deposit').value);
       const afterRent = num($('#d-rent').value);
       const afterRentFee = $('#d-rentfee').value.trim();
-      const afterAddress = maskOn ? ($('#d-address').dataset.real || '') : $('#d-address').value.trim();
+      const afterAddress = readMasked('#d-address', mAddress);
       const afterAreaType = $('#d-area-type').value.trim();
       const afterAreaSize = $('#d-area-size').value.trim();
       const afterLessorName = $('#d-lessor-name').value.trim();
@@ -3632,5 +3695,17 @@
       renderAll();
     });
   </script>
+
+<!-- ─────────────────────────────────────────────────────────────
+     업무포털 주소 — 포털 주소가 바뀌면 **아래 한 줄만** 고치세요.
+     이 스크립트가 페이지 안의 「← 업무포털」 링크를 전부 바꿔 줍니다.
+     ───────────────────────────────────────────────────────────── -->
+<script>
+  window.FITI_PORTAL = 'https://fiti-procurement-portal.vercel.app/';
+  (function () {
+    var sel = 'a[href*="procurement-portal"], a[data-portal]';
+    document.querySelectorAll(sel).forEach(function (a) { a.href = window.FITI_PORTAL; });
+  })();
+</script>
 </body>
 </html>
