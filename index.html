@@ -1848,8 +1848,8 @@
     }
 
     let state = {
-      user: '관리자',
-      role: 'manager',
+      user: '조회',
+      role: 'viewer',       // 기본은 조회 전용. 암호를 넣어야 '전략구매팀(manager)' 으로 올라갑니다
       data: [],
       logs: [],
       sourceFile: '',
@@ -1887,6 +1887,11 @@
        기본값은 '가림'이며, 상단 [개인정보 가림] 버튼으로 전환합니다.
        ===================================================================== */
     let maskOn = true;
+
+    /* 개인정보를 푸는 데 필요한 암호. 전략구매팀 공용 번호입니다.
+       바꾸시려면 이 한 줄만 고치면 됩니다.
+       ❗ 화면 소스에 보이므로, 데이터 자체를 지키는 수단은 아닙니다. */
+    const UNMASK_CODE = '8124';
 
     // 홍길동 → 홍○동 / 김철 → 김○ / 남궁민수 → 남○○수
     function maskName(v) {
@@ -3364,10 +3369,18 @@
       renderAll(false);
     });
 
-    $('#export-data').addEventListener('click', exportDeliveryXlsx);
-    $('#export-log').addEventListener('click', exportLogXlsx);
+    /* 조회 전용일 때는 저장·불러오기를 막습니다.
+       현황·차트만 보는 사람이 데이터를 덮어쓰는 일이 없도록. */
+    function needManager(what) {
+      if (state.role === 'manager') return true;
+      alert(what + ' 권한이 없습니다.\n\n상단 [개인정보 가림] 버튼을 눌러 전략구매팀 비밀번호를 입력해 주세요.');
+      return false;
+    }
+    $('#export-data').addEventListener('click', e => { if (needManager('현황 저장')) exportDeliveryXlsx(e); });
+    $('#load-file')?.addEventListener('click', e => { if (!needManager('엑셀 불러오기')) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+    $('#export-log').addEventListener('click', e => { if (needManager('변경이력 다운로드')) exportLogXlsx(e); });
     
-    $('#add-housing').addEventListener('click', openAddModal);
+    $('#add-housing').addEventListener('click', e => { if (needManager('신규 등록')) openAddModal(e); });
     $('#save-new-housing').addEventListener('click', saveNewHousing);
     
     $('#close-detail-sidebar').addEventListener('click', closeDetailSidebar);
@@ -3400,16 +3413,33 @@
     });
 
     // 개인정보 가림 / 표시 전환
+    // 현황·차트·건수는 암호 없이 그대로 보입니다.
+    // 가려 둔 개인정보(담당자명·주소·연락처·계좌)를 풀 때만 암호를 확인합니다.
     $('#toggle-mask').addEventListener('click', () => {
       if (!maskOn) {
-        maskOn = true;
+        maskOn = true;                 // 다시 가리는 건 암호 없이
+        state.role = 'viewer';         // 가리면 수정 권한도 함께 내려놓습니다
+        state.user = '조회';
       } else {
-        if (!confirm('담당자명 · 주소지 등 개인정보를 화면에 그대로 표시합니다.\n\n주변에 화면이 노출되지 않는지 확인해 주세요.\n계속할까요?')) return;
+        const code = (prompt(
+          '담당자명 · 주소지 · 연락처 · 계좌번호를 화면에 그대로 표시합니다.\n' +
+          '주변에 화면이 노출되지 않는지 확인해 주세요.\n\n' +
+          '전략구매팀 접속 비밀번호를 입력하세요.'
+        ) || '').trim();
+        if (!code) return;                                  // 취소
+        if (code !== UNMASK_CODE) {
+          alert('비밀번호가 맞지 않습니다.\n\n전략구매팀(내선 8124)에 문의해 주세요.');
+          return;
+        }
         maskOn = false;
+        state.role = 'manager';        // 암호를 맞췄으니 수정·저장도 열립니다
+        state.user = '전략구매팀';
       }
 
       $('#toggle-mask').textContent = maskOn ? '🔒 개인정보 가림' : '🔓 개인정보 표시중';
       $('#toggle-mask').classList.toggle('ghost', maskOn);
+      $('#user-label').textContent = `${state.user} 님`;
+      $('#role-label').textContent = state.role === 'manager' ? '관리자 권한' : '조회 전용';
 
       renderAll(false);
       if (currentDetailId != null) openDetail(currentDetailId);
