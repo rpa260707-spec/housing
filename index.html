@@ -1131,7 +1131,8 @@
         <span id="user-label"></span>
         <span id="role-label" class="pill"></span>
         <button id="open-guide" class="btn ghost small" type="button" title="비거주지 근무직원에 대한 지원금 운영요령 (2025.07.01.)">📋 사택 지원 지침</button>
-        <button id="toggle-mask" class="btn ghost small" type="button" title="담당자명 · 주소지 · 임대인 정보를 가리거나 표시합니다">🔒 개인정보 가림</button>
+        <button id="toggle-mask" class="btn ghost small" type="button" title="전략구매팀 비밀번호를 넣으면 개인정보가 보이고 수정 · 저장 · 엑셀 불러오기가 열립니다">🔑 전략구매팀 모드</button>
+        <button id="lock-session" class="btn ghost small hidden" type="button" title="조회 전용으로 되돌립니다">로그아웃</button>
         <button id="clear-session" class="btn ghost small">전체 초기화</button>
       </div>
     </nav>
@@ -1226,7 +1227,7 @@
           <!-- 진행중 / 완료. 완료(반납 완료)도 숨기지 않고 여기서 봅니다. -->
           <div class="lease-tabs" id="lease-tabs">
             <button type="button" class="lease-tab on" data-tab="active">진행중<span class="n" id="tabn-active">0</span></button>
-            <button type="button" class="lease-tab" data-tab="done">완료<span class="n" id="tabn-done">0</span></button>
+            <button type="button" class="lease-tab" data-tab="done" title="반납 완료 · 계약 만료">완료<span class="n" id="tabn-done">0</span></button>
           </div>
           <section class="table-wrap">
             <table>
@@ -2321,10 +2322,16 @@
       return isNaN(d.getTime()) ? 0 : d.getTime();
     }
 
+    /* 끝난 건 — 「반납 완료」와 「계약 만료」 둘 다입니다.
+       계약이 만료되면 더 이상 진행중이 아니므로 완료 탭으로 넘깁니다.
+       다만 만료는 보증금 반납이 남아 있을 수 있어, 완료 탭 표에서 임차상태로 구분됩니다. */
+    const DONE_STATUS = ['terminated', 'expired'];
+    const isLeaseDone = (r) => DONE_STATUS.includes(r.status);
+
     /* 탭 버튼 모양·건수 갱신. 건수는 탭과 무관하게 전체에서 셉니다
        (탭을 옮겨도 반대쪽 숫자가 0 으로 보이면 안 되므로). */
     function syncLeaseTabs() {
-      const done = state.data.filter(r => r.status === 'terminated').length;
+      const done = state.data.filter(isLeaseDone).length;
       const active = state.data.length - done;
       const a = $('#tabn-active'), d = $('#tabn-done');
       if (a) a.textContent = active;
@@ -2361,7 +2368,7 @@
 
         const region = getRegionFromAddress(r.address);
         const matchesRegion = (regionFilter === 'all' || region === regionFilter);
-        const isDone = (r.status === 'terminated');
+        const isDone = isLeaseDone(r);
         const matchesTab = (tab === 'done') ? isDone : !isDone;
 
         return (!q || text.includes(q)) &&
@@ -2421,11 +2428,16 @@
     }
 
     function renderSummary() {
+      /* 완료(반납 완료 · 계약 만료) 건은 더 이상 임차 중이 아니라 아래 집계에서 뺍니다.
+         차트·합계가 목록 「진행중」 탭과 같은 숫자를 가리켜야 합니다.
+         예외 — KPI 「계약 만료」 카드는 전체에서 셉니다. 만료를 세는 것이 그 카드의 목적이라 빼면 늘 0 이 됩니다. */
+      const live = state.data.filter(r => !isLeaseDone(r));
+
       let exceededDepositCount = 0;
       let exceededRentCount = 0;
       let exceededBothCount = 0;
       
-      state.data.forEach(r => {
+      live.forEach(r => {
         const reg = getRegionFromAddress(r.address);
         const comp = checkLimitCompliance(reg, r.deposit, r.rent);
         if (comp.status === '보증금/월세 초과') exceededBothCount++;
@@ -2433,14 +2445,14 @@
         else if (comp.status === '월세 초과') exceededRentCount++;
       });
 
-      $('#kpi-total').textContent = state.data.length;
+      $('#kpi-total').textContent = live.length;
       
-      $('#kpi-deposit').innerHTML = money(state.data.reduce((a, r) => a + num(r.deposit), 0)) + '원' + 
+      $('#kpi-deposit').innerHTML = money(live.reduce((a, r) => a + num(r.deposit), 0)) + '원' + 
         (exceededDepositCount + exceededBothCount > 0 
           ? `<span style="font-size:11px; color:var(--red); font-weight:800; margin-left:6px; white-space:nowrap;">(초과 ${exceededDepositCount + exceededBothCount}건)</span>`
           : '');
       
-      $('#kpi-rent').innerHTML = money(state.data.reduce((a, r) => a + num(r.rent), 0)) + '원' +
+      $('#kpi-rent').innerHTML = money(live.reduce((a, r) => a + num(r.rent), 0)) + '원' +
         (exceededRentCount + exceededBothCount > 0 
           ? `<span style="font-size:11px; color:var(--red); font-weight:800; margin-left:6px; white-space:nowrap;">(초과 ${exceededRentCount + exceededBothCount}건)</span>`
           : '');
@@ -2448,14 +2460,14 @@
       $('#kpi-expiring').textContent = state.data.filter(r => r.status === 'expiring').length;
       $('#kpi-expired').textContent = state.data.filter(r => r.status === 'expired').length;
       
-      const activeContracts = state.data.filter(r => r.status !== 'terminated');
+      const activeContracts = live.filter(r => r.status !== 'terminated');
       $('#kpi-avg-rent').textContent = activeContracts.length 
         ? money(Math.round(activeContracts.reduce((a, r) => a + num(r.rent), 0) / activeContracts.length)) + '원'
         : '0원';
 
       // Type Chart
       const typeCounts = {};
-      state.data.forEach(r => {
+      live.forEach(r => {
         const k = r.areaType || '형태 미지정';
         typeCounts[k] = (typeCounts[k] || 0) + 1;
       });
@@ -2463,7 +2475,7 @@
 
       // Dept Chart
       const deptCounts = {};
-      state.data.forEach(r => {
+      live.forEach(r => {
         const k = r.dept || '부서 미입력';
         deptCounts[k] = (deptCounts[k] || 0) + 1;
       });
@@ -2474,7 +2486,7 @@
       // 묵시적 갱신된 건은 계약만료일이 이미 지나 있어(2024년 등) 만료 예정으로
       // 보면 안 되고, 갱신 반영된 예상종료일이 실제로 도래할 시점입니다.
       const expiryCounts = {};
-      state.data.forEach(r => {
+      live.forEach(r => {
         if (r.status === 'terminated') return;
         const end = r.expectedEndDate
           || calculateExpectedEndDate(r.startDate, r.endDate, r.status)
@@ -2495,7 +2507,7 @@
         regionCounts[reg] = 0;
         regionExceeded[reg] = 0;
       });
-      state.data.forEach(r => {
+      live.forEach(r => {
         const reg = getRegionFromAddress(r.address);
         regionCounts[reg] = (regionCounts[reg] || 0) + 1;
         const comp = checkLimitCompliance(reg, r.deposit, r.rent);
@@ -3412,6 +3424,35 @@
       if (e.key === 'Escape' && !$('#guide-modal').classList.contains('hidden')) closeModals();
     });
 
+    /* 권한 표시를 한곳에서 바꿉니다. 버튼 이름이 「개인정보 가림」이던 시절에는
+       입력이 막혀도 어디서 푸는지 알 수가 없었습니다 — 이름을 권한 기준으로 바꿨습니다. */
+    function syncRoleUi() {
+      const on = (state.role === 'manager');
+      const tm = $('#toggle-mask');
+      if (tm) {
+        tm.textContent = on ? '🔓 전략구매팀 모드 (켜짐)' : '🔑 전략구매팀 모드';
+        tm.classList.toggle('ghost', !on);
+      }
+      $('#lock-session')?.classList.toggle('hidden', !on);
+      $('#user-label').textContent = `${state.user} 님`;
+      const rl = $('#role-label');
+      if (rl) {
+        rl.textContent = on ? '관리자 권한' : '조회 전용 — 누르면 풀기';
+        rl.style.cursor = on ? 'default' : 'pointer';
+        rl.title = on ? '' : '누르면 전략구매팀 비밀번호를 물어봅니다';
+      }
+    }
+
+    /* 조회 전용으로 되돌립니다(= 로그아웃). 자료는 그대로 두고 권한만 내려놓습니다. */
+    function lockSession() {
+      maskOn = true;
+      state.role = 'viewer';
+      state.user = '조회';
+      syncRoleUi();
+      renderAll(false);
+      if (currentDetailId != null) openDetail(currentDetailId);
+    }
+
     // 개인정보 가림 / 표시 전환
     // 현황·차트·건수는 암호 없이 그대로 보입니다.
     // 가려 둔 개인정보(담당자명·주소·연락처·계좌)를 풀 때만 암호를 확인합니다.
@@ -3436,13 +3477,15 @@
         state.user = '전략구매팀';
       }
 
-      $('#toggle-mask').textContent = maskOn ? '🔒 개인정보 가림' : '🔓 개인정보 표시중';
-      $('#toggle-mask').classList.toggle('ghost', maskOn);
-      $('#user-label').textContent = `${state.user} 님`;
-      $('#role-label').textContent = state.role === 'manager' ? '관리자 권한' : '조회 전용';
-
+      syncRoleUi();
       renderAll(false);
       if (currentDetailId != null) openDetail(currentDetailId);
+    });
+
+    /* 로그아웃 — 조회 전용으로 되돌립니다. 「조회 전용」 배지를 눌러도 모드 전환이 됩니다. */
+    $('#lock-session')?.addEventListener('click', lockSession);
+    $('#role-label')?.addEventListener('click', () => {
+      if (state.role !== 'manager') $('#toggle-mask')?.click();
     });
 
     $('#save-detail').addEventListener('click', () => {
@@ -3718,8 +3761,7 @@
     })();
 
     // Default initialization
-    $('#user-label').textContent = `${state.user} 님`;
-    $('#role-label').textContent = state.role === 'manager' ? '관리자 권한' : '일반 사용자';
+    syncRoleUi();                    // 머리말 버튼·배지를 권한에 맞춰 그립니다
 
     HousingSync.boot(function () {
       renderAll();
