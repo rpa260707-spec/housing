@@ -842,6 +842,29 @@
     .gtable td.no{color:#cbd5e1}
     .gtable.num td{font-variant-numeric:tabular-nums}
     .gtable .sub{display:block;font-size:11.5px;color:#64748b;font-weight:600;line-height:1.5;margin-top:2px}
+    /* 선택 ③(사택) 지역별 한도 — 표 안에 다 넣으면 칸이 터져 접어 둡니다 */
+    .gdet{border:1px solid #bae6fd;background:#f0f9ff;border-radius:14px;margin-top:10px;overflow:hidden}
+    .gdet > summary{list-style:none;cursor:pointer;padding:12px 16px;font-size:13.5px;font-weight:900;
+      color:#0369a1;display:flex;align-items:center;gap:8px;user-select:none}
+    .gdet > summary::-webkit-details-marker{display:none}
+    .gdet > summary::after{content:"▾";margin-left:auto;font-size:12px;transition:transform .15s}
+    .gdet[open] > summary::after{transform:rotate(180deg)}
+    .gdet > summary:hover{background:#e0f2fe}
+    .gdet > summary .sub{font-weight:700;color:#64748b;font-size:11.5px}
+    .gdet__b{padding:0 16px 14px}
+    .gdet__u{font-size:11.5px;color:#64748b;font-weight:700;text-align:right;margin:0 0 5px}
+    .gdet table{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;
+      border:1px solid #e2e8f0;border-radius:10px;overflow:hidden}
+    .gdet th,.gdet td{border:1px solid #e9eef5;padding:7px 8px;text-align:center;white-space:nowrap}
+    .gdet thead th{background:#f1f5f9;color:#475569;font-size:11.5px;font-weight:800}
+    .gdet tbody th{background:#f8fafc;color:#0f172a;font-size:12px;font-weight:900}
+    .gdet td{font-variant-numeric:tabular-nums;font-weight:700;color:#0f172a}
+    .gdet .gap{background:#f8fafc;border-top:0;border-bottom:0;width:8px;padding:0}
+    .gdet__w{margin-top:10px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;
+      padding:10px 12px;font-size:12px;line-height:1.7;color:#1f2937}
+    .gdet__w b{color:#92400e}
+    @media (max-width:640px){ .gdet th,.gdet td{padding:5px 3px;font-size:11px} }
+
     .gnote{background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:14px 16px;
       margin-bottom:12px;font-size:13px;line-height:1.75;color:#334155}
     .gnote h4{font-size:13.5px;font-weight:900;color:#0f172a;margin:0 0 8px}
@@ -1516,7 +1539,7 @@
                 <td class="k">거주 지원</td>
                 <td>거주지원금1<br><span class="sub">전세보증금<br>서울 4,000만원<br>그 외 3,000만원</span></td>
                 <td>거주지원금2<br><span class="sub">월세보증금<br>500만원 한도 내 실비</span></td>
-                <td class="hl"><b>사택 지원</b><br><span class="sub">연구원 명의 임차</span></td>
+                <td class="hl"><b>사택 지원</b><br><span class="sub">연구원 명의 임차<br>보증금 · 월임차료는 <b>지역별 한도</b> ▾</span></td>
               </tr>
               <tr>
                 <td class="k">주재수당</td>
@@ -1539,6 +1562,32 @@
             </tbody>
           </table>
         </div>
+
+        <details class="gdet">
+          <summary>🏠 선택 ③ 사택 — 지역별 한도 <span class="sub">누르면 펼쳐집니다</span></summary>
+          <div class="gdet__b">
+            <p class="gdet__u">(단위 : 천원)</p>
+            <table>
+              <thead>
+                <tr><th>지역</th><th>보증금</th><th>월임차료</th><th class="gap"></th><th>지역</th><th>보증금</th><th>월임차료</th></tr>
+              </thead>
+              <tbody>
+                <tr><th>서울</th><td>8,600</td><td>810</td><td class="gap"></td><th>전주</th><td>3,500</td><td>400</td></tr>
+                <tr><th>안산</th><td>6,550</td><td>550</td><td class="gap"></td><th>광주</th><td>3,500</td><td>400</td></tr>
+                <tr><th>대전</th><td>5,500</td><td>450</td><td class="gap"></td><th>대구</th><td>5,500</td><td>550</td></tr>
+                <tr><th>청주</th><td>6,000</td><td>550</td><td class="gap"></td><th>부산</th><td>5,500</td><td>560</td></tr>
+                <tr><th>충주</th><td>6,000</td><td>550</td><td class="gap"></td><th>울산</th><td>5,000</td><td>450</td></tr>
+              </tbody>
+            </table>
+            <div class="gdet__w">
+              <b>⚠ 아직 확정 금액이 아닙니다.</b> 위 표는 <b>2025년 기준금액</b>으로 예산을 수립한 값이고,
+              <b>시세를 반영한 금액은 추후 공지 예정</b>입니다 — 계약 전에 전략구매팀(내선 8124)에 확인해 주세요.<br>
+              <b>보증금과 월임차료는 서로 조정할 수 없습니다</b>(2026년 변경). 각 항목을 개별로 판정합니다.<br>
+              <span style="color:#64748b">이 표는 <b>10개 지역</b> 구분이고, 「권역 · 교통비」 탭의 <b>〈별표 1〉 7권역</b>과는 다른 구분입니다.</span>
+            </div>
+          </div>
+        </details>
+
         <div class="gnote">
           <h4>📌 참고</h4>
           <ul>
