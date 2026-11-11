@@ -427,13 +427,6 @@
     .yellow { color: var(--yellow); }
     .purple { color: var(--purple); }
     
-    .card:nth-child(1)::before { content: '전체 관리 사택'; position: absolute; left: 20px; bottom: 15px; font-size: 12px; color: #94a3b8; }
-    .card:nth-child(2)::before { content: '현황 보증금 합계'; position: absolute; left: 20px; bottom: 15px; font-size: 12px; color: #94a3b8; }
-    .card:nth-child(3)::before { content: '현황 월세 합계'; position: absolute; left: 20px; bottom: 15px; font-size: 12px; color: #94a3b8; }
-    .card:nth-child(4)::before { content: '3개월 내 만료 건수'; position: absolute; left: 20px; bottom: 15px; font-size: 12px; color: #94a3b8; }
-    .card:nth-child(5)::before { content: '계약 만료 처리 건수'; position: absolute; left: 20px; bottom: 15px; font-size: 12px; color: #94a3b8; }
-    .card:nth-child(6)::before { content: '유효 임차 계약 건수'; position: absolute; left: 20px; bottom: 15px; font-size: 12px; color: #94a3b8; }
-    
     /* Charts Container */
     .charts {
       display: grid;
@@ -1137,6 +1130,18 @@
       }
     }
   </style>
+<style id="fiti-mobile">
+/* 폰 가독성 공통(2026-11-11) — 640px 이하에서 작은 글씨를 13px 로 올리고, 단어 중간 줄바꿈 · 가로 넘침을 막습니다 */
+@media (max-width:640px){
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  body{word-break:keep-all;overflow-wrap:break-word;overflow-x:hidden}
+  small,th,td,li,dd,dt,summary,figcaption,label,.card__k,.cb__foot,.rate__u,.hint,.msg,.muted,.text-xs,.text-\[10px\],.text-\[11px\]{font-size:13px!important;line-height:1.55}
+  img,video{max-width:100%;height:auto}
+  .cb__chips{flex-wrap:wrap!important;overflow:visible!important}
+  pre,code{white-space:pre-wrap}
+  .pill,.hero-sub,.source-chip{font-size:13px!important}
+}
+</style>
 </head>
 <body>
   
@@ -1182,12 +1187,12 @@
 
       <!-- KPI Summary Area -->
       <section class="kpis">
-        <div class="card"><div class="card-title">전체 관리 사택</div><div id="kpi-total" class="card-value blue">0</div></div>
+        <div class="card"><div class="card-title">전체 현행 관리</div><div id="kpi-total" class="card-value blue">0</div></div>
         <div class="card"><div class="card-title">총 보증금액</div><div id="kpi-deposit" class="card-value green">0</div></div>
-        <div class="card"><div class="card-title">총 월세금액</div><div id="kpi-rent" class="card-value blue">0</div></div>
+        <div class="card"><div class="card-title">월 월세금액</div><div id="kpi-rent" class="card-value blue">0</div></div>
         <div class="card"><div class="card-title">만료 예정 (3개월)</div><div id="kpi-expiring" class="card-value yellow">0</div></div>
         <div class="card"><div class="card-title">계약 만료</div><div id="kpi-expired" class="card-value red">0</div></div>
-        <div class="card"><div class="card-title">평균 월세액</div><div id="kpi-avg-rent" class="card-value purple">0</div></div>
+        <div class="card"><div class="card-title">유효 임차계약 월세액(평균)</div><div id="kpi-avg-rent" class="card-value purple">0</div></div>
       </section>
 
       <!-- Charts Row -->
@@ -1197,7 +1202,7 @@
           <div id="type-chart"></div>
         </div>
         <div class="panel">
-          <h2>부서별 임차 Top 5</h2>
+          <h2>부서별 임차 현황</h2>
           <div id="dept-chart"></div>
         </div>
         <div class="panel">
@@ -1209,7 +1214,7 @@
           <h2>사택 지원 기준 및 준수율</h2>
           <div id="compliance-chart"></div>
           <p class="hint">지역별 지원 한도 대비 준수 현황을 확인합니다.<br>
-            <b>2026년 예산집행지침 기준 · 보증금과 월세를 서로 조정할 수 없어 각각 한도를 지켜야 합니다.</b></p>
+            <b>2027년 조정(안) 기준 · (기준 보증금+기준 월세×12)×1.05 이내, 보증금은 기준 이내, 월세는 기준의 115% 이내.</b></p>
         </div>
       </section>
 
@@ -1572,17 +1577,21 @@
                 <tr><th>지역</th><th>보증금</th><th>월임차료</th><th class="gap"></th><th>지역</th><th>보증금</th><th>월임차료</th></tr>
               </thead>
               <tbody>
-                <tr><th>서울</th><td>8,600</td><td>810</td><td class="gap"></td><th>전주</th><td>3,500</td><td>400</td></tr>
-                <tr><th>안산</th><td>6,550</td><td>550</td><td class="gap"></td><th>광주</th><td>3,500</td><td>400</td></tr>
-                <tr><th>대전</th><td>5,500</td><td>450</td><td class="gap"></td><th>대구</th><td>5,500</td><td>550</td></tr>
-                <tr><th>청주</th><td>6,000</td><td>550</td><td class="gap"></td><th>부산</th><td>5,500</td><td>560</td></tr>
-                <tr><th>충주</th><td>6,000</td><td>550</td><td class="gap"></td><th>울산</th><td>5,000</td><td>450</td></tr>
+                <tr><th>서울</th><td>8,900</td><td>830</td><td class="gap"></td><th>전주</th><td>3,600</td><td>410</td></tr>
+                <tr><th>안산</th><td>6,700</td><td>560</td><td class="gap"></td><th>광주</th><td>3,600</td><td>410</td></tr>
+                <tr><th>대전</th><td>5,500</td><td>450</td><td class="gap"></td><th>부산</th><td>5,600</td><td>560</td></tr>
+                <tr><th>청주(오창)</th><td>6,100</td><td>550</td><td class="gap"></td><th>울산</th><td>5,200</td><td>460</td></tr>
+                <tr><th>대구</th><td>5,500</td><td>550</td><td class="gap"></td><th></th><td></td><td></td></tr>
+                
               </tbody>
             </table>
             <div class="gdet__w">
-              <b>⚠ 아직 확정 금액이 아닙니다.</b> 위 표는 <b>2025년 기준금액</b>으로 예산을 수립한 값이고,
-              <b>시세를 반영한 금액은 추후 공지 예정</b>입니다 — 계약 전에 전략구매팀(내선 8124)에 확인해 주세요.<br>
-              <b>보증금과 월임차료는 서로 조정할 수 없습니다</b>(2026년 변경). 각 항목을 개별로 판정합니다.<br>
+              <b>2027년 조정(안) — 확정 전입니다.</b> 보증금을 낮추고 월임차료를 높이는 계약도 아래 식을 만족하면 됩니다.<br>
+(기준 보증금 + 기준 월임차료×12)×1.05 ≥ 구하려는 보증금 + 구하려는 월임차료×12<br>
+· 보증금은 기준 보증금 <b>이내</b> · 월임차료는 기준 월임차료의 <b>115% 이내</b><br>
+예) 청주(오창) — 보증금 6,100 → 월 602 · 6,000 → 611 · 5,800 → 627 · 5,500 이하 → 632 (천원)<br>
+계약 전에 전략구매팀(내선 8124)에 확인해 주세요.
+<br>
               <span style="color:#64748b">이 표는 <b>10개 지역</b> 구분이고, 「권역 · 교통비」 탭의 <b>〈별표 1〉 7권역</b>과는 다른 구분입니다.</span>
             </div>
           </div>
@@ -1803,13 +1812,12 @@
       const depVal = Number(deposit) || 0;
       const rentVal = Number(rent) || 0;
       
+      // 2027년 사택 지원 임차료 조정(안) (2026.11.09 전략구매팀 보고):
+      //   (기준 보증금 + 기준 월세×12)×1.05 ≥ 보증금 + 월세×12
+      //   보증금은 기준 이내, 월세는 기준의 115% 이내
+      const totalOk = (depVal + rentVal * 12) <= (limit.deposit + limit.rent * 12) * 1.05;
       const depositExceeded = depVal > limit.deposit;
-      const rentExceeded = rentVal > limit.rent;
-
-      // 2026년 예산집행지침(p.22) 개정:
-      //   2025년 — 보증금/월세 간 조정 '가능'  → 총액 환산으로 상계 판정
-      //   2026년 — 보증금/월세 간 조정 '불가'  → 각 항목을 개별로 판정
-      // 따라서 총액 상계식(기준보증금 + 기준월세×12 대비)은 더 이상 쓰지 않습니다.
+      const rentExceeded = rentVal > limit.rent * 1.15 || (!totalOk && rentVal > limit.rent);
       const isFormulaCompliant = !depositExceeded && !rentExceeded;
 
       let status = '한도 충족';
@@ -2528,7 +2536,7 @@
         const k = r.dept || '부서 미입력';
         deptCounts[k] = (deptCounts[k] || 0) + 1;
       });
-      renderBarChart('#dept-chart', Object.entries(deptCounts).sort((a, b) => b[1] - a[1]).slice(0, 5));
+      renderBarChart('#dept-chart', Object.entries(deptCounts).sort((a, b) => b[1] - a[1]));
 
       // Expiry Chart
       // 계약만료일(endDate)이 아니라 **예상종료일**을 기준으로 셉니다.
