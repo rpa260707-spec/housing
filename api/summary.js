@@ -199,8 +199,10 @@ export default async function handler(req, res) {
     for (const r of rows) {
       total += 1;
 
-      const terminated = r?.status === 'terminated';
-      if (terminated) continue;
+      // 끝난 계약은 화면(index.html DONE_STATUS)과 같게 해지 · 만료 둘 다 뺍니다.
+      // 만료를 남겨 두면 끝난 사택이 유효 임차 · 권역 · 월세 합계에 들어갑니다(11-20 광주 2건).
+      if (r?.status === 'terminated') continue;
+      if (r?.status === 'expired') { expired += 1; continue; }
 
       active += 1;
       totalDeposit += Number(r?.deposit) || 0;
